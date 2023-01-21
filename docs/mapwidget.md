@@ -1,0 +1,4 @@
+ 
+# mapwidget module
+
+::: mapwidget.mapwidget
