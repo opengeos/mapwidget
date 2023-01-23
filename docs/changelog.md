@@ -1,11 +1,9 @@
 # Changelog
 
-## v0.0.1 - Date
+## v0.0.2 - Jan 23, 2023
 
-**Improvement**:
+-   Added Map class
 
--   TBD
+## v0.0.1 - Jan 22, 2023
 
-**New Features**:
-
--   TBD
+-   Initial release
