@@ -10,6 +10,8 @@ class Map(anywidget.AnyWidget):
     _css = pathlib.Path(os.path.join(cwd, 'styles', 'leaflet.css'))
     center = traitlets.List([40, -100]).tag(sync=True, o=True)
     zoom = traitlets.Int(4).tag(sync=True, o=True)
+    width = traitlets.Unicode('100%').tag(sync=True, o=True)
+    height = traitlets.Unicode('500px').tag(sync=True, o=True)
 
     def add_layer(self, url=None):
         if url is None:

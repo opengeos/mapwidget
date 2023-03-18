@@ -4,9 +4,12 @@ export function render(view) {
         // create a div element
         let center = view.model.get("center");
         let zoom = view.model.get("zoom");
-        
+        let width = view.model.get("width");
+        let height = view.model.get("height");
+
         const container = document.createElement("div");            
-        container.style.height = "600px";
+        container.style.width = width;
+        container.style.height = height;
         
         // create a Leaflet map
         const map = L.map(container).setView(center, zoom);
