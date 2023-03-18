@@ -5,7 +5,7 @@
 
 import unittest
 
-from mapwidget import mapwidget
+from mapwidget import leaflet
 
 
 class TestMapwidget(unittest.TestCase):
