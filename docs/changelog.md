@@ -2,6 +2,10 @@
 
 ## v0.0.3 - Mar 18, 2023
 
+-   Added js and styles to sdist
+
+## v0.0.3 - Mar 18, 2023
+
 -   Added Cesium module
 
 ## v0.0.2 - Jan 23, 2023
