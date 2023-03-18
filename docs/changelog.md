@@ -1,6 +1,10 @@
 # Changelog
 
-## v0.0.3 - Mar 18, 2023
+## v0.0.5 - Mar 18, 2023
+
+-   Added mapbox, maplibre, and openlayers modules
+
+## v0.0.4 - Mar 18, 2023
 
 -   Added js and styles to sdist
 
