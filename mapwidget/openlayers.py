@@ -5,6 +5,12 @@ import traitlets
 
 
 class Map(anywidget.AnyWidget):
+    """Map widget
+
+    Args:
+        anywidget (_type_): _description_
+    """
+
     cwd = os.path.dirname(os.path.abspath(__file__))
     _esm = pathlib.Path(os.path.join(cwd, 'javascript', 'openlayers.js'))
     _css = pathlib.Path(os.path.join(cwd, 'styles', 'openlayers.css'))

@@ -24,7 +24,7 @@ plugins:
     - mkdocs-jupyter:
           include_source: True
           #   ignore_h1_titles: True
-          #   execute: True
+          execute: False
           #   execute_ignore: "*.ipynb"
 
 markdown_extensions:
@@ -48,6 +48,15 @@ nav:
     - FAQ: faq.md
     - Changelog: changelog.md
     - Report Issues: https://github.com/giswqs/mapwidget/issues
+    - Examples:
+          - examples/cesium.ipynb
+          - examples/leaflet.ipynb
+          - examples/mapbox.ipynb
+          - examples/maplibre.ipynb
+          - examples/openlayers.ipynb
     - API Reference:
           - cesium module: cesium.md
           - leaflet module: leaflet.md
+          - mapbox module: mapbox.md
+          - maplibre module: maplibre.md
+          - openlayers module: openlayers.md
