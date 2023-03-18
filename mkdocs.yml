@@ -1,6 +1,6 @@
 site_name: mapwidget
 
-site_url: https://giswqs.github.io/mapwidget
+site_url: https://mapwidget.gishub.org
 
 repo_url: https://github.com/giswqs/mapwidget
 
@@ -23,10 +23,10 @@ plugins:
     - git-revision-date
     - mkdocs-jupyter:
           include_source: True
-        #   ignore_h1_titles: True
-        #   execute: True
-        #   execute_ignore: "*.ipynb"
-          
+          #   ignore_h1_titles: True
+          #   execute: True
+          #   execute_ignore: "*.ipynb"
+
 markdown_extensions:
     - attr_list
     - pymdownx.superfences
@@ -49,4 +49,5 @@ nav:
     - Changelog: changelog.md
     - Report Issues: https://github.com/giswqs/mapwidget/issues
     - API Reference:
-          - mapwidget module: mapwidget.md
+          - cesium module: cesium.md
+          - leaflet module: leaflet.md

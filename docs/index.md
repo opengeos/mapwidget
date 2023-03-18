@@ -1,15 +1,11 @@
 # Welcome to mapwidget
 
-
 [![image](https://img.shields.io/pypi/v/mapwidget.svg)](https://pypi.python.org/pypi/mapwidget)
-
 
 **Custom map widgets for creating interactive maps**
 
-
 -   Free software: MIT license
--   Documentation: <https://giswqs.github.io/mapwidget>
-    
+-   Documentation: <https://mapwidget.gishub.org>
 
 ## Features
 
