@@ -16,6 +16,7 @@ function loadScript(src) {
   export function render(view) {
 
     let center = view.model.get("center");
+    center.reverse();
     let zoom = view.model.get("zoom");
     let width = view.model.get("width");
     let height = view.model.get("height");

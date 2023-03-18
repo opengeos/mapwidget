@@ -11,7 +11,7 @@ function loadScript(src) {
     });
   };
   
-  await loadScript("https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.js");
+  await loadScript("https://cdn.jsdelivr.net/npm/ol@v7.3.0/dist/ol.js");
   
   export function render(view) {
 
@@ -24,15 +24,18 @@ function loadScript(src) {
     const div = document.createElement("div");
     div.style.width = width;
     div.style.height = height;
-
-    let token = view.model.get("token");
     
-  mapboxgl.accessToken = token
-  const map = new mapboxgl.Map({
-  container: div,
-  style: 'mapbox://styles/mapbox/streets-v12',
-  center: center,
-  zoom: zoom
-  });
+    var map = new ol.Map({
+        target: div,
+        layers: [
+            new ol.layer.Tile({
+                source: new ol.source.OSM()
+            })
+        ],
+        view: new ol.View({
+            center: ol.proj.fromLonLat(center),
+            zoom: zoom
+        })
+    });
     view.el.appendChild(div);
   }
