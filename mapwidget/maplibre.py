@@ -5,7 +5,7 @@ import traitlets
 
 
 class Map(anywidget.AnyWidget):
-    """Create a Maplibre map widget."""
+    """Create a MapLibre map widget."""
 
     _cwd = os.path.dirname(os.path.abspath(__file__))
     _esm = pathlib.Path(os.path.join(_cwd, 'javascript', 'maplibre.js'))

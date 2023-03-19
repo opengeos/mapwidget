@@ -5,7 +5,7 @@
 
 **Custom map widgets for creating interactive maps**
 
-The **mapwidget** package provides a set of custom map widgets for creating interactive maps in a Jupyter environment using different JavaScript mapping libraries, such as [cesium](https://cesium.com/), [leaflet](https://leafletjs.com/), [mapbox](https://www.mapbox.com/), [maplibre](https://maplibre.org/), and [openlayers](https://openlayers.org/). The widgets are built on top of the [anywidget](https://github.com/manzt/anywidget) Python package.
+The **mapwidget** package provides a set of custom map widgets for creating interactive maps in a Jupyter environment using different JavaScript mapping libraries, such as [Cesium](https://cesium.com/), [Leaflet](https://leafletjs.com/), [Mapbox](https://www.mapbox.com/), [MapLibre](https://maplibre.org/), and [OpenLayers](https://openlayers.org/). The widgets are built on top of the [anywidget](https://github.com/manzt/anywidget) Python package.
 
 -   Free software: MIT license
 -   Documentation: https://mapwidget.gishub.org
