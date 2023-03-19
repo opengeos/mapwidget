@@ -54,6 +54,7 @@ nav:
           - examples/mapbox.ipynb
           - examples/maplibre.ipynb
           - examples/openlayers.ipynb
+          - examples/esm.ipynb
     - API Reference:
           - cesium module: cesium.md
           - leaflet module: leaflet.md
