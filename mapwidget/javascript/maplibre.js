@@ -20,6 +20,46 @@ export function render(view) {
         zoom: zoom, // starting zoom
     });
 
+    map.on("click", function (e) {
+        // console.log("Clicked at:", e.lngLat);
+        view.model.set("clicked_latlng", [e.lngLat.lat, e.lngLat.lng]);
+        view.model.save_changes();
+    });
+
+    map.on("move", function (e) {
+        // console.log(
+        //     "Map moved to:",
+        //     map.getCenter(),
+        //     "with zoom level:",
+        //     map.getZoom()
+        // );
+        view.model.set("center", [map.getCenter().lat, map.getCenter().lng]);
+        let bbox = map.getBounds();
+        let bounds = [bbox._sw.lng, bbox._sw.lat, bbox._ne.lng, bbox._ne.lat];
+        view.model.set("bounds", bounds);
+        view.model.save_changes();
+    });
+
+    map.on("zoom", function (e) {
+        // console.log('Map zoomed to:', map.getZoom());
+        view.model.set("zoom", map.getZoom());
+        let bbox = map.getBounds();
+        let bounds = [bbox._sw.lng, bbox._sw.lat, bbox._ne.lng, bbox._ne.lat];
+        view.model.set("bounds", bounds);
+        view.model.save_changes();
+    });
+
+    // view.model.on("change:center", function () {
+    //     let center = view.model.get("center");
+    //     center.reverse();
+    //     map.setCenter(center);
+    // });
+
+    // view.model.on("change:zoom", function () {
+    //     let zoom = view.model.get("zoom");
+    //     map.setZoom(zoom);
+    // });
+
     // Footer
     view.el.appendChild(div);
 }

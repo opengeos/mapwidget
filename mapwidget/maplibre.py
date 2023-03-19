@@ -5,17 +5,17 @@ import traitlets
 
 
 class Map(anywidget.AnyWidget):
-    """Create a Maplibre map widget.
-
-    """
+    """Create a Maplibre map widget."""
 
     _cwd = os.path.dirname(os.path.abspath(__file__))
     _esm = pathlib.Path(os.path.join(_cwd, 'javascript', 'maplibre.js'))
     _css = pathlib.Path(os.path.join(_cwd, 'styles', 'maplibre.css'))
     center = traitlets.List([0, 20]).tag(sync=True, o=True)
-    zoom = traitlets.Int(2).tag(sync=True, o=True)
+    zoom = traitlets.Float(2).tag(sync=True, o=True)
+    bounds = traitlets.List([0, 0, 0, 0]).tag(sync=True, o=True)
     width = traitlets.Unicode('100%').tag(sync=True, o=True)
     height = traitlets.Unicode('600px').tag(sync=True, o=True)
+    clicked_latlng = traitlets.List([None, None]).tag(sync=True, o=True)
 
     def set_esm(self, esm, container='map'):
         """Set esm attribute. Can be a string, a file path, or a url.
