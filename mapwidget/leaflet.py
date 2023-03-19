@@ -11,9 +11,9 @@ class Map(anywidget.AnyWidget):
         anywidget (_type_): _description_
     """
 
-    cwd = os.path.dirname(os.path.abspath(__file__))
-    _esm = pathlib.Path(os.path.join(cwd, 'javascript', 'leaflet.js'))
-    _css = pathlib.Path(os.path.join(cwd, 'styles', 'leaflet.css'))
+    _cwd = os.path.dirname(os.path.abspath(__file__))
+    _esm = pathlib.Path(os.path.join(_cwd, 'javascript', 'leaflet.js'))
+    _css = pathlib.Path(os.path.join(_cwd, 'styles', 'leaflet.css'))
     center = traitlets.List([40, -100]).tag(sync=True, o=True)
     zoom = traitlets.Int(4).tag(sync=True, o=True)
     width = traitlets.Unicode('100%').tag(sync=True, o=True)

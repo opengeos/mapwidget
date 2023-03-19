@@ -11,9 +11,9 @@ class Map(anywidget.AnyWidget):
         anywidget (_type_): _description_
     """
 
-    cwd = os.path.dirname(os.path.abspath(__file__))
-    _esm = pathlib.Path(os.path.join(cwd, 'javascript', 'mapbox.js'))
-    _css = pathlib.Path(os.path.join(cwd, 'styles', 'mapbox.css'))
+    _cwd = os.path.dirname(os.path.abspath(__file__))
+    _esm = pathlib.Path(os.path.join(_cwd, 'javascript', 'mapbox.js'))
+    _css = pathlib.Path(os.path.join(_cwd, 'styles', 'mapbox.css'))
     default_token = os.environ.get('MAPBOX_TOKEN')
     token = traitlets.Unicode(default_token).tag(sync=True)
     center = traitlets.List([0, 20]).tag(sync=True, o=True)
