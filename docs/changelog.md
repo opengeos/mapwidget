@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.0.6 - Mar 18, 2023
+
+-   Updated mapbox and maplibre modules to use ESM
+
 ## v0.0.5 - Mar 18, 2023
 
 -   Added mapbox, maplibre, and openlayers modules
