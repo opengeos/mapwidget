@@ -16,3 +16,5 @@ class Map(anywidget.AnyWidget):
     _css = pathlib.Path(os.path.join(cwd, 'styles', 'cesium.css'))
     default_token = os.environ.get('CESIUM_TOKEN')
     token = traitlets.Unicode(default_token).tag(sync=True)
+    width = traitlets.Unicode('100%').tag(sync=True, o=True)
+    height = traitlets.Unicode('600px').tag(sync=True, o=True)

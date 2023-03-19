@@ -17,4 +17,4 @@ class Map(anywidget.AnyWidget):
     center = traitlets.List([0, 20]).tag(sync=True, o=True)
     zoom = traitlets.Int(2).tag(sync=True, o=True)
     width = traitlets.Unicode('100%').tag(sync=True, o=True)
-    height = traitlets.Unicode('300px').tag(sync=True, o=True)
+    height = traitlets.Unicode('600px').tag(sync=True, o=True)

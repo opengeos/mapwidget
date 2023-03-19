@@ -16,9 +16,12 @@ await loadScript(
 );
 
 export function render(view) {
+    let width = view.model.get("width");
+    let height = view.model.get("height");
+
     const div = document.createElement("div");
-    div.style.width = "100%";
-    div.style.height = "600px";
+    div.style.width = width;
+    div.style.height = height;
 
     Cesium.Ion.defaultAccessToken = view.model.get("token");
 
