@@ -21,18 +21,11 @@ export function render(view) {
     });
 
     map.on("click", function (e) {
-        // console.log("Clicked at:", e.lngLat);
         view.model.set("clicked_latlng", [e.lngLat.lat, e.lngLat.lng]);
         view.model.save_changes();
     });
 
-    map.on("move", function (e) {
-        // console.log(
-        //     "Map moved to:",
-        //     map.getCenter(),
-        //     "with zoom level:",
-        //     map.getZoom()
-        // );
+    map.on("moveend", function (e) {
         view.model.set("center", [map.getCenter().lat, map.getCenter().lng]);
         let bbox = map.getBounds();
         let bounds = [bbox._sw.lng, bbox._sw.lat, bbox._ne.lng, bbox._ne.lat];
@@ -40,8 +33,8 @@ export function render(view) {
         view.model.save_changes();
     });
 
-    map.on("zoom", function (e) {
-        // console.log('Map zoomed to:', map.getZoom());
+    map.on("zoomend", function (e) {
+        view.model.set("center", [map.getCenter().lat, map.getCenter().lng]);
         view.model.set("zoom", map.getZoom());
         let bbox = map.getBounds();
         let bounds = [bbox._sw.lng, bbox._sw.lat, bbox._ne.lng, bbox._ne.lat];
