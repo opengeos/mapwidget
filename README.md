@@ -26,7 +26,7 @@ The **mapwidget** package provides a set of custom map widgets for creating inte
 
 ### Mapbox
 
-![](https://i.imgur.com/1PbtnQE.gif)
+![](https://i.imgur.com/4uIEnAJ.gif)
 
 ### MapLibre
 
