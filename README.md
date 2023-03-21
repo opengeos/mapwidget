@@ -10,9 +10,27 @@ The **mapwidget** package provides a set of custom map widgets for creating inte
 -   Free software: MIT license
 -   Documentation: https://mapwidget.gishub.org
 
-## Features
+## Examples
 
--   TODO
+-   [Cesium](https://mapwidget.gishub.org/examples/cesium)
+-   [Leaflet](https://mapwidget.gishub.org/examples/leaflet)
+-   [Mapbox](https://mapwidget.gishub.org/examples/mapbox)
+-   [MapLibre](https://mapwidget.gishub.org/examples/maplibre)
+-   [OpenLayers](https://mapwidget.gishub.org/examples/openlayers)-
+
+## Demos
+
+### Cesium
+
+![](https://i.imgur.com/6quoDtN.gif)
+
+### Mapbox
+
+![](https://i.imgur.com/1PbtnQE.gif)
+
+### MapLibre
+
+![](https://i.imgur.com/o2ZHeTL.gif)
 
 ## Credits
 

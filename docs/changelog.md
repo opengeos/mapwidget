@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.0 - Mar 20, 2023
+
+-   Added notebook examples
+
 ## v0.0.6 - Mar 18, 2023
 
 -   Updated mapbox and maplibre modules to use ESM
