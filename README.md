@@ -16,7 +16,7 @@ The **mapwidget** package provides a set of custom map widgets for creating inte
 -   [Leaflet](https://mapwidget.gishub.org/examples/leaflet)
 -   [Mapbox](https://mapwidget.gishub.org/examples/mapbox)
 -   [MapLibre](https://mapwidget.gishub.org/examples/maplibre)
--   [OpenLayers](https://mapwidget.gishub.org/examples/openlayers)-
+-   [OpenLayers](https://mapwidget.gishub.org/examples/openlayers)
 
 ## Demos
 
