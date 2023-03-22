@@ -2,7 +2,7 @@
 
 [![image](https://img.shields.io/pypi/v/mapwidget.svg)](https://pypi.python.org/pypi/mapwidget)
 [![image](https://studiolab.sagemaker.aws/studiolab.svg)](https://studiolab.sagemaker.aws/import/github/giswqs/mapwidget/blob/master/docs/examples/maplibre.ipynb)
-[![image](https://img.shields.io/badge/Open-Planetary%20Computer-black?style=flat&logo=microsoft)](https://pccompute.westeurope.cloudapp.azure.com/compute/hub/user-redirect/git-pull?repo=https://github.com/giswqs/mapwidget&urlpath=lab/tree/leafmap/docs/examples/maplibre.ipynb&branch=master)
+[![image](https://img.shields.io/badge/Open-Planetary%20Computer-black?style=flat&logo=microsoft)](https://pccompute.westeurope.cloudapp.azure.com/compute/hub/user-redirect/git-pull?repo=https://github.com/giswqs/mapwidget&urlpath=lab/tree/mapwidget/docs/examples/maplibre.ipynb&branch=master)
 [![image](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/giswqs/mapwidget/blob/master/docs/examples/maplibre.ipynb)
 
 **Custom Jupyter widgets for creating interactive maps using JavaScript libraries with bidirectional communication**

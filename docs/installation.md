@@ -10,7 +10,7 @@ pip install mapwidget
 
 ## Use docker
 
-You can also use [docker](https://hub.docker.com/r/giswqs/mapwidget/) to run leafmap:
+You can also use [docker](https://hub.docker.com/r/giswqs/mapwidget/) to run mapwidget:
 
 ```bash
 docker run -it -p 8888:8888 giswqs/mapwidget:latest
