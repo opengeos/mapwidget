@@ -15,8 +15,8 @@ jobs:
             fail-fast: false
             matrix:
                 config:
-                    - { os: windows-latest, py: "3.9" }
-                    - { os: macOS-latest, py: "3.9" }
+                    - { os: windows-latest, py: "3.10" }
+                    - { os: macOS-latest, py: "3.10" }
                     - { os: ubuntu-latest, py: "3.7" }
                     - { os: ubuntu-latest, py: "3.8" }
                     - { os: ubuntu-latest, py: "3.9" }
@@ -37,7 +37,7 @@ jobs:
                   python -m pip install --upgrade pip
                   pip install --user --no-cache-dir Cython
                   pip install --user -r requirements.txt
-                  pip install .
+                  pip install --user .
             - name: PKG-TEST
               run: |
                   python -m unittest discover tests/
