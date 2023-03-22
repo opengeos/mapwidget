@@ -1,16 +1,20 @@
 # Installation
 
-## Stable release
+## Install from PyPI
 
-To install mapwidget, run this command in your terminal:
+**mapwdiget** is available on [PyPI](https://pypi.org/project/mapwidget/). To install **mapwidget**, run this command in your terminal:
 
-```
+```bash
 pip install mapwidget
 ```
 
-This is the preferred method to install mapwidget, as it will always install the most recent stable release.
+## Use docker
 
-If you don't have [pip](https://pip.pypa.io) installed, this [Python installation guide](http://docs.python-guide.org/en/latest/starting/installation/) can guide you through the process.
+You can also use [docker](https://hub.docker.com/r/giswqs/mapwidget/) to run leafmap:
+
+```bash
+docker run -it -p 8888:8888 giswqs/mapwidget:latest
+```
 
 ## From sources
 
