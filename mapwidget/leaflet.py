@@ -59,4 +59,3 @@ class Map(anywidget.AnyWidget):
                 "opacity": opacity,
             }
         )
-
