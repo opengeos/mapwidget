@@ -57,15 +57,15 @@ export function render(view) {
 
     view.model.on("msg:custom", (msg) => {
         switch (msg.type) {
+            case "add_basemap":
+                L.tileLayer(msg.url, msg).addTo(map);
+                break;
             case "add_layer":
-                L.tileLayer(msg.url, { attribution: msg.attribution }).addTo(
-                    map
-                );
+                L.tileLayer(msg.url, msg).addTo(map);
                 break;
             default:
                 console.err(`Unsupported message '${msg.type}'.`);
         }
-        console.log(data);
     });
 
     // Footer

@@ -21,8 +21,42 @@ class Map(anywidget.AnyWidget):
     height = traitlets.Unicode('600px').tag(sync=True, o=True)
     clicked_latlng = traitlets.List([None, None]).tag(sync=True, o=True)
 
-    def add_layer(self, url=None):
-        if url is None:
-            url = 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}'
+    def add_basemap(self, name, opacity=1.0, **kwargs):
+        from .basemaps import get_xyz_dict
 
-        self.send({"type": "add_layer", "url": url, "attribution": "Google"})
+        xyz_tiles = get_xyz_dict()
+
+        if name in xyz_tiles:
+            url = xyz_tiles[name]['url']
+            attribution = xyz_tiles[name]['attribution']
+            max_zoom = xyz_tiles[name]['max_zoom']
+            self.send(
+                {
+                    "type": "add_basemap",
+                    "url": url,
+                    "attribution": attribution,
+                    "maxZoom": max_zoom,
+                    "opacity": opacity,
+                    "name": name,
+                }
+            )
+
+        else:
+            raise ValueError(
+                f"Basemap {name} not found. It must be one of the following: {list(xyz_tiles.keys())}"
+            )
+
+    def add_layer(
+        self, url, name='Layer', attribution='', max_zoom=24, opacity=1.0, **kwargs
+    ):
+        self.send(
+            {
+                "type": "add_layer",
+                "url": url,
+                "attribution": attribution,
+                "maxZoom": max_zoom,
+                "name": name,
+                "opacity": opacity,
+            }
+        )
+

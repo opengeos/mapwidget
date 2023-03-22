@@ -1,1 +1,2 @@
 anywidget[dev]
+xyzservices
