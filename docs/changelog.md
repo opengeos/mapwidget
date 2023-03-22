@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.2 - Mar 22, 2023
+
+-   Added basemaps module (#9)
+
 ## v0.1.1 - Mar 22, 2023
 
 -   Added Dockerfile and docker image (#7)
