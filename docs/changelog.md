@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.1 - Mar 22, 2023
+
+-   Added Dockerfile and docker image (#7)
+-   Updated mapbox and cesium notebooks (#6)
+-   Added badges
+
 ## v0.1.0 - Mar 20, 2023
 
 -   Added notebook examples
