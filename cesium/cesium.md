@@ -1,0 +1,3 @@
+# cesium module
+
+::: mapwidget.cesium

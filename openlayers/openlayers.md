@@ -1,0 +1,3 @@
+# openlayers module
+
+::: mapwidget.openlayers

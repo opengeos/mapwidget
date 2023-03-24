@@ -1,0 +1,3 @@
+# leaflet module
+
+::: mapwidget.leaflet

@@ -1,0 +1,3 @@
+# mapbox module
+
+::: mapwidget.mapbox

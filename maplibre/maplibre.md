@@ -1,0 +1,3 @@
+# maplibre module
+
+::: mapwidget.maplibre
