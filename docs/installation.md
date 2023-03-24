@@ -8,6 +8,15 @@
 pip install mapwidget
 ```
 
+## Install from conda-forge
+
+**mapwidget** is also available on [conda-forge](https://anaconda.org/conda-forge/mapwidget). If you have
+[Anaconda](https://www.anaconda.com/distribution/#download-section) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) installed on your computer, you can install mapwidget using the following command:
+
+```bash
+conda install -c conda-forge mapwidget
+```
+
 ## Use docker
 
 You can also use [docker](https://hub.docker.com/r/giswqs/mapwidget/) to run mapwidget:
