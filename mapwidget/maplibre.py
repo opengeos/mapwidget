@@ -18,8 +18,6 @@ class Map(anywidget.AnyWidget):
     height = traitlets.Unicode("600px").tag(sync=True, o=True)
     clicked_latlng = traitlets.List([None, None]).tag(sync=True, o=True)
     calls = traitlets.List(traitlets.Dict(), default_value=[]).tag(sync=True, o=True)
-    query_result = traitlets.Dict(default_value={}).tag(sync=True, o=True)
-    call_results = traitlets.Dict(default_value={}).tag(sync=True, o=True)
     view_state = traitlets.Dict().tag(sync=True)
 
     def add_call(self, method: str, args: list = None, kwargs: dict = None):
@@ -29,22 +27,6 @@ class Map(anywidget.AnyWidget):
         if kwargs is None:
             kwargs = {}
         self.calls = self.calls + [{"method": method, "args": args, "kwargs": kwargs}]
-
-    def call_and_return(self, method: str, args: list = None) -> str:
-        """Call a JS method and receive the result via call_results."""
-        if args is None:
-            args = []
-        call_id = str(uuid.uuid4())
-        self.calls = self.calls + [
-            {"method": method, "args": args, "returnResult": True, "call_id": call_id}
-        ]
-        return call_id
-
-    def query(self, method: str, args: list = None):
-        """Request data from the JS map and return via `result` trait."""
-        if args is None:
-            args = []
-        self.calls = self.calls + [{"method": method, "args": args, "return": True}]
 
     def set_center(self, lng: float, lat: float):
         """Set the center of the map."""
