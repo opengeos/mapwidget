@@ -38,7 +38,7 @@ exclude = ["docs*"]
 universal = true
 
 [tool.bumpversion]
-current_version = "0.46.9"
+current_version = "0.1.2"
 commit = true
 tag = true
 
