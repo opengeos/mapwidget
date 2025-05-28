@@ -8,6 +8,21 @@ function render({ model, el }) {
         document.head.appendChild(link);
     }
 
+    function updateModel(model, map) {
+        const viewState = {
+          center: map.getCenter(),
+          zoom: map.getZoom(),
+          bounds: map.getBounds(),
+          bearing: map.getBearing(),
+          pitch: map.getPitch(),
+        };
+        model.set("view_state", viewState);
+        model.save_changes();
+      }
+
+
+
+
     // Load UMD JS if not already loaded
     function initMap() {
         el.innerHTML = "";
@@ -20,7 +35,7 @@ function render({ model, el }) {
         div.style.height = "100%";
         el.appendChild(div);
 
-        const center = model.get("center").slice().reverse();
+        const center = model.get("center");
         const zoom = model.get("zoom");
 
         const map = new maplibregl.Map({
@@ -31,42 +46,72 @@ function render({ model, el }) {
         });
 
         map.on("click", function (e) {
-            model.set("clicked_latlng", [e.lngLat.lat, e.lngLat.lng]);
+            model.set("clicked_latlng", [e.lngLat.lng, e.lngLat.lat]);
             model.save_changes();
         });
 
         map.on("moveend", function () {
             const c = map.getCenter();
             const bbox = map.getBounds();
-            model.set("center", [c.lat, c.lng]);
+            model.set("center", [c.lng, c.lat]);
             model.set("bounds", [bbox.getWest(), bbox.getSouth(), bbox.getEast(), bbox.getNorth()]);
+            updateModel(model, map);
             model.save_changes();
         });
 
         map.on("zoomend", function () {
             const c = map.getCenter();
             const bbox = map.getBounds();
-            model.set("center", [c.lat, c.lng]);
+            model.set("center", [c.lng, c.lat]);
             model.set("zoom", map.getZoom());
             model.set("bounds", [bbox.getWest(), bbox.getSouth(), bbox.getEast(), bbox.getNorth()]);
+            updateModel(model, map);
             model.save_changes();
         });
 
         // Support JS calls from Python
-        model.on("change:calls", () => {
-            const calls = model.get("calls") || [];
-            calls.forEach(({ method, args }) => {
-                if (typeof map[method] === "function") {
-                    try {
-                        map[method](...(args || []));
-                    } catch (err) {
-                        console.warn(`map.${method} failed`, err);
+        map.on("load", () => {
+            model.on("change:calls", async () => {
+                const calls = model.get("calls") || [];
+
+                for (const call of calls) {
+                    const { method, args = [], returnResult, call_id } = call;
+
+                    console.log("Processing call:", call);  // Optional debug log
+
+                    if (typeof map[method] === "function") {
+                        try {
+                            const result = map[method](...args);
+                            const resolved = result instanceof Promise ? await result : result;
+
+                            if (returnResult && call_id) {
+                                const allResults = model.get("call_results") || {};
+                                allResults[call_id] = {
+                                    method,
+                                    result: resolved
+                                };
+                                model.set("call_results", allResults);
+                                model.save_changes();
+                            }
+                        } catch (err) {
+                            if (returnResult && call_id) {
+                                const allResults = model.get("call_results") || {};
+                                allResults[call_id] = {
+                                    method,
+                                    error: err.message
+                                };
+                                model.set("call_results", allResults);
+                                model.save_changes();
+                            }
+                        }
                     }
                 }
+
+                model.set("calls", []);
+                model.save_changes();
             });
-            model.set("calls", []);
-            model.save_changes();
         });
+
 
         // Resize after layout stabilizes
         setTimeout(() => map.resize(), 100);

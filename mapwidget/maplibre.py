@@ -1,4 +1,5 @@
 import os
+import uuid
 import pathlib
 import anywidget
 import traitlets
@@ -17,6 +18,9 @@ class Map(anywidget.AnyWidget):
     height = traitlets.Unicode("600px").tag(sync=True, o=True)
     clicked_latlng = traitlets.List([None, None]).tag(sync=True, o=True)
     calls = traitlets.List(traitlets.Dict(), default_value=[]).tag(sync=True, o=True)
+    query_result = traitlets.Dict(default_value={}).tag(sync=True, o=True)
+    call_results = traitlets.Dict(default_value={}).tag(sync=True, o=True)
+    view_state = traitlets.Dict().tag(sync=True)
 
     def add_call(self, method: str, args: list = None, kwargs: dict = None):
         """Invoke a JS map method with arguments."""
@@ -26,105 +30,101 @@ class Map(anywidget.AnyWidget):
             kwargs = {}
         self.calls = self.calls + [{"method": method, "args": args, "kwargs": kwargs}]
 
-    def set_esm(self, esm, container="map"):
-        """Set esm attribute. Can be a string, a file path, or a url.
-            See examples at https://maplibre.org/maplibre-gl-js-docs/example/
-            Open an example and click on the 'Edit in CodePen' button.
-            Then copy the code from the 'JS' tab, and assign it to the esm parameter.
+    def call_and_return(self, method: str, args: list = None) -> str:
+        """Call a JS method and receive the result via call_results."""
+        if args is None:
+            args = []
+        call_id = str(uuid.uuid4())
+        self.calls = self.calls + [
+            {"method": method, "args": args, "returnResult": True, "call_id": call_id}
+        ]
+        return call_id
 
-        Args:
-            esm (str): The esm string, file path, or url.
-            container (str, optional): The container name. Defaults to 'map'.
+    def query(self, method: str, args: list = None):
+        """Request data from the JS map and return via `result` trait."""
+        if args is None:
+            args = []
+        self.calls = self.calls + [{"method": method, "args": args, "return": True}]
 
-        Raises:
-            TypeError: If esm is not a string.
-        """
-        if isinstance(esm, str):
-            if os.path.isfile(esm):
-                with open(esm, "r") as f:
-                    content = f.read()
-            elif esm.startswith("http"):
-                import urllib.request
+    def set_center(self, lng: float, lat: float):
+        """Set the center of the map."""
+        self.add_call("setCenter", [[lng, lat]])
 
-                with urllib.request.urlopen(esm) as response:
-                    content = response.read().decode("utf-8")
-            else:
-                content = esm
+    def set_zoom(self, zoom: float):
+        """Set the zoom level."""
+        self.add_call("setZoom", [zoom])
 
-            self._esm = self._create_esm(content, container=container)
+    def pan_to(self, lng: float, lat: float):
+        """Pan the map to a given location."""
+        self.add_call("panTo", [[lng, lat]])
 
-        else:
-            raise TypeError("esm must be a string")
+    def fly_to(self, center=None, zoom=None, bearing=None, pitch=None):
+        """Fly to a given location with optional zoom, bearing, and pitch."""
+        options = {}
+        if center:
+            options["center"] = center
+        if zoom is not None:
+            options["zoom"] = zoom
+        if bearing is not None:
+            options["bearing"] = bearing
+        if pitch is not None:
+            options["pitch"] = pitch
+        self.add_call("flyTo", [options])
 
-    def set_css(self, css, container="map"):
-        """Set css attribute. Can be a string, a file path, or a url.
-            See examples at https://maplibre.org/maplibre-gl-js-docs/example/
-            Open an example and click on the 'Edit in CodePen' button.
-            Then copy the code from the 'CSS' tab, and assign it to the css parameter.
-        Args:
-            css (str): The css string, file path, or url.
+    def fit_bounds(self, bounds: list, options: dict = None):
+        """Fit the map to given bounds [[west, south], [east, north]]."""
+        args = [bounds]
+        if options:
+            args.append(options)
+        self.add_call("fitBounds", args)
 
-        Raises:
-            TypeError: If css is not a string.
-        """
-        if isinstance(css, str):
-            if os.path.isfile(css):
-                with open(css, "r") as f:
-                    content = f.read()
-            elif css.startswith("http"):
-                import urllib.request
+    def set_pitch(self, pitch: float):
+        """Set the pitch of the map."""
+        self.add_call("setPitch", [pitch])
 
-                with urllib.request.urlopen(css) as response:
-                    content = response.read().decode("utf-8")
-            else:
-                content = css
+    def set_bearing(self, bearing: float):
+        """Set the bearing of the map."""
+        self.add_call("setBearing", [bearing])
 
-            self._css = content.replace(f"#{container}", f"#div").replace(
-                f".{container}", f".div"
-            )
-        else:
-            raise TypeError("css must be a string")
+    def resize(self):
+        """Trigger map resize."""
+        self.add_call("resize")
 
-    def _create_esm(self, esm, container="map"):
-        """Create esm string by replacing the container name.
+    def add_source(self, source_id: str, source: dict):
+        """Add a new source to the map."""
+        self.add_call("addSource", [source_id, source])
 
-        Args:
-            esm (str): The esm string.
-            container (str, optional): The container name. Defaults to 'map'.
+    def remove_source(self, source_id: str):
+        """Remove a source from the map."""
+        self.add_call("removeSource", [source_id])
 
-        Returns:
-            str: The esm string with the container name replaced.
-        """
-        _cwd = os.path.dirname(os.path.abspath(__file__))
-        _esm = pathlib.Path(os.path.join(_cwd, "js", "maplibre.js"))
+    def add_layer(self, layer: dict, before_id: str = None):
+        """Add a new layer to the map."""
+        args = [layer]
+        if before_id:
+            args.append(before_id)
+        self.add_call("addLayer", args)
 
-        with open(_esm, "r") as f:
-            lines = f.readlines()
+    def remove_layer(self, layer_id: str):
+        """Remove a layer from the map."""
+        self.add_call("removeLayer", [layer_id])
 
-        header = []
-        footer = []
+    def set_paint_property(self, layer_id: str, prop: str, value):
+        """Set a paint property on a layer."""
+        self.add_call("setPaintProperty", [layer_id, prop, value])
 
-        for index, line in enumerate(lines):
-            if line.strip() == "// Map content":
-                header = lines[: index + 1]
-                break
+    def set_layout_property(self, layer_id: str, prop: str, value):
+        """Set a layout property on a layer."""
+        self.add_call("setLayoutProperty", [layer_id, prop, value])
 
-        for index, line in enumerate(lines):
-            if line.strip() == "// Footer":
-                footer = lines[index:]
-                break
+    def set_filter(self, layer_id: str, filter_expr):
+        """Set a filter expression on a layer."""
+        self.add_call("setFilter", [layer_id, filter_expr])
 
-        content = esm.replace(f"'{container}'", "div").replace(f'"{container}"', "div")
-        esm = "".join(header) + content + "".join(footer)
+    def set_style(self, style_url: str):
+        """Set the map style."""
+        self.add_call("setStyle", [style_url])
 
-        return esm
-
-    def _save_esm(self, output):
-        """Save esm to file
-
-        Args:
-            output (str): The output file path.
-        """
-
-        with open(output, "w") as f:
-            f.write(self._esm)
+    def set_layer_visibility(self, layer_id: str, visibility: str):
+        """Set visibility of a layer ('visible' or 'none')."""
+        self.set_layout_property(layer_id, "visibility", visibility)
