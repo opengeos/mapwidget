@@ -6,7 +6,7 @@ import io
 from os import path as op
 from setuptools import setup, find_packages
 
-with open('README.md') as readme_file:
+with open("README.md") as readme_file:
     readme = readme_file.read()
 
 here = op.abspath(op.dirname(__file__))
@@ -26,33 +26,33 @@ test_requirements = []
 
 setup(
     author="Qiusheng Wu",
-    author_email='giswqs@gmail.com',
-    python_requires='>=3.7',
+    author_email="giswqs@gmail.com",
+    python_requires=">=3.7",
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Natural Language :: English',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',
+        "Development Status :: 2 - Pre-Alpha",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
     description="Custom Jupyter widgets for creating interactive maps",
     install_requires=install_requires,
     dependency_links=dependency_links,
     license="MIT license",
     long_description=readme,
-    long_description_content_type='text/markdown',
+    long_description_content_type="text/markdown",
     include_package_data=True,
-    keywords='mapwidget',
-    name='mapwidget',
-    packages=find_packages(include=['mapwidget', 'mapwidget.*']),
+    keywords="mapwidget",
+    name="mapwidget",
+    packages=find_packages(include=["mapwidget", "mapwidget.*"]),
     setup_requires=setup_requirements,
-    test_suite='tests',
+    test_suite="tests",
     tests_require=test_requirements,
-    url='https://github.com/giswqs/mapwidget',
-    version='0.1.2',
+    url="https://github.com/giswqs/mapwidget",
+    version="0.1.2",
     zip_safe=False,
 )

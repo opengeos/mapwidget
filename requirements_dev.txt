@@ -1,11 +1,11 @@
-pip
 bump2version
-wheel
-watchdog
-flake8
-tox
 coverage
-Sphinx
-twine
+flake8
 grip
+pip
+Sphinx
+tox
+twine
+watchdog
+wheel
 

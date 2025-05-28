@@ -1,58 +1,84 @@
-import maplibregl from "https://esm.sh/maplibre-gl@2.4.0";
+import maplibregl from "https://esm.sh/maplibre-gl@5.5.0";
 
-export function render(view) {
-    // Header
-    let center = view.model.get("center");
-    center.reverse();
-    let zoom = view.model.get("zoom");
-    let width = view.model.get("width");
-    let height = view.model.get("height");
+function render({ model, el }) {
+    // Load CSS if missing
+    if (!document.getElementById("maplibre-css")) {
+        const link = document.createElement("link");
+        link.id = "maplibre-css";
+        link.rel = "stylesheet";
+        link.href = "https://unpkg.com/maplibre-gl@5.5.0/dist/maplibre-gl.css";
+        document.head.appendChild(link);
+    }
 
+    // Prepare the outer container
+    el.innerHTML = "";
+    el.style.position = "relative";
+    el.style.width = model.get("width") || "100%";
+    el.style.height = model.get("height") || "600px";
+
+    // Create and style map container
     const div = document.createElement("div");
-    div.style.width = width;
-    div.style.height = height;
+    div.style.width = "100%";
+    div.style.height = "100%";
+    el.appendChild(div);
 
-    // Map content
+    let center = model.get("center").slice().reverse(); // [lng, lat]
+    let zoom = model.get("zoom");
+
     const map = new maplibregl.Map({
         container: div,
-        style: "https://demotiles.maplibre.org/style.json", // stylesheet location
-        center: center, // starting position [lng, lat]
-        zoom: zoom, // starting zoom
+        style: "https://tiles.openfreemap.org/styles/liberty",
+        center: center,
+        zoom: zoom,
     });
 
     map.on("click", function (e) {
-        view.model.set("clicked_latlng", [e.lngLat.lat, e.lngLat.lng]);
-        view.model.save_changes();
+        model.set("clicked_latlng", [e.lngLat.lat, e.lngLat.lng]);
+        model.save_changes();
     });
 
-    map.on("moveend", function (e) {
-        view.model.set("center", [map.getCenter().lat, map.getCenter().lng]);
-        let bbox = map.getBounds();
-        let bounds = [bbox._sw.lng, bbox._sw.lat, bbox._ne.lng, bbox._ne.lat];
-        view.model.set("bounds", bounds);
-        view.model.save_changes();
+    map.on("moveend", function () {
+        const c = map.getCenter();
+        const bbox = map.getBounds();
+        model.set("center", [c.lat, c.lng]);
+        model.set("bounds", [bbox.getWest(), bbox.getSouth(), bbox.getEast(), bbox.getNorth()]);
+        model.save_changes();
     });
 
-    map.on("zoomend", function (e) {
-        view.model.set("center", [map.getCenter().lat, map.getCenter().lng]);
-        view.model.set("zoom", map.getZoom());
-        let bbox = map.getBounds();
-        let bounds = [bbox._sw.lng, bbox._sw.lat, bbox._ne.lng, bbox._ne.lat];
-        view.model.set("bounds", bounds);
-        view.model.save_changes();
+    map.on("zoomend", function () {
+        const c = map.getCenter();
+        const bbox = map.getBounds();
+        model.set("center", [c.lat, c.lng]);
+        model.set("zoom", map.getZoom());
+        model.set("bounds", [bbox.getWest(), bbox.getSouth(), bbox.getEast(), bbox.getNorth()]);
+        model.save_changes();
     });
 
-    // view.model.on("change:center", function () {
-    //     let center = view.model.get("center");
-    //     center.reverse();
-    //     map.setCenter(center);
-    // });
+    // Handle JS method calls from Python
+    model.on("change:calls", () => {
+        const calls = model.get("calls") || [];
+        calls.forEach(({ method, args }) => {
+            if (typeof map[method] === "function") {
+                try {
+                    map[method](...(args || []));
+                } catch (err) {
+                    console.warn(`map.${method} failed`, err);
+                }
+            } else {
+                console.warn(`map.${method} is not a function`);
+            }
+        });
+        model.set("calls", []);
+        model.save_changes();
+    });
 
-    // view.model.on("change:zoom", function () {
-    //     let zoom = view.model.get("zoom");
-    //     map.setZoom(zoom);
-    // });
 
-    // Footer
-    view.el.appendChild(div);
+    // Ensure the map fills the container fully
+    setTimeout(() => {
+        map.resize();
+    }, 100);  // Delay to allow notebook layout to settle
 }
+
+
+
+export default { render };

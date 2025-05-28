@@ -1,5 +1,4 @@
-"""Module for basemaps. 
-"""
+"""Module for basemaps."""
 
 import collections
 import xyzservices.providers as xyz
@@ -267,10 +266,10 @@ def get_xyz_dict(free_only=True):
             max_zoom = 24
 
         tiles[item] = {
-            'name': name,
-            'url': url,
-            'attribution': attribution,
-            'max_zoom': max_zoom,
+            "name": name,
+            "url": url,
+            "attribution": attribution,
+            "max_zoom": max_zoom,
         }
 
     return tiles

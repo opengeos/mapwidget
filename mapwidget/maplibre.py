@@ -8,16 +8,25 @@ class Map(anywidget.AnyWidget):
     """Create a MapLibre map widget."""
 
     _cwd = os.path.dirname(os.path.abspath(__file__))
-    _esm = pathlib.Path(os.path.join(_cwd, 'javascript', 'maplibre.js'))
-    _css = pathlib.Path(os.path.join(_cwd, 'styles', 'maplibre.css'))
+    _esm = pathlib.Path(os.path.join(_cwd, "javascript", "maplibre.js"))
+    _css = pathlib.Path(os.path.join(_cwd, "styles", "maplibre.css"))
     center = traitlets.List([0, 20]).tag(sync=True, o=True)
     zoom = traitlets.Float(2).tag(sync=True, o=True)
     bounds = traitlets.List([0, 0, 0, 0]).tag(sync=True, o=True)
-    width = traitlets.Unicode('100%').tag(sync=True, o=True)
-    height = traitlets.Unicode('600px').tag(sync=True, o=True)
+    width = traitlets.Unicode("100%").tag(sync=True, o=True)
+    height = traitlets.Unicode("600px").tag(sync=True, o=True)
     clicked_latlng = traitlets.List([None, None]).tag(sync=True, o=True)
+    calls = traitlets.List(traitlets.Dict(), default_value=[]).tag(sync=True, o=True)
 
-    def set_esm(self, esm, container='map'):
+    def add_call(self, method: str, args: list = None, kwargs: dict = None):
+        """Invoke a JS map method with arguments."""
+        if args is None:
+            args = []
+        if kwargs is None:
+            kwargs = {}
+        self.calls = self.calls + [{"method": method, "args": args, "kwargs": kwargs}]
+
+    def set_esm(self, esm, container="map"):
         """Set esm attribute. Can be a string, a file path, or a url.
             See examples at https://maplibre.org/maplibre-gl-js-docs/example/
             Open an example and click on the 'Edit in CodePen' button.
@@ -32,22 +41,22 @@ class Map(anywidget.AnyWidget):
         """
         if isinstance(esm, str):
             if os.path.isfile(esm):
-                with open(esm, 'r') as f:
+                with open(esm, "r") as f:
                     content = f.read()
-            elif esm.startswith('http'):
+            elif esm.startswith("http"):
                 import urllib.request
 
                 with urllib.request.urlopen(esm) as response:
-                    content = response.read().decode('utf-8')
+                    content = response.read().decode("utf-8")
             else:
                 content = esm
 
             self._esm = self._create_esm(content, container=container)
 
         else:
-            raise TypeError('esm must be a string')
+            raise TypeError("esm must be a string")
 
-    def set_css(self, css, container='map'):
+    def set_css(self, css, container="map"):
         """Set css attribute. Can be a string, a file path, or a url.
             See examples at https://maplibre.org/maplibre-gl-js-docs/example/
             Open an example and click on the 'Edit in CodePen' button.
@@ -60,23 +69,23 @@ class Map(anywidget.AnyWidget):
         """
         if isinstance(css, str):
             if os.path.isfile(css):
-                with open(css, 'r') as f:
+                with open(css, "r") as f:
                     content = f.read()
-            elif css.startswith('http'):
+            elif css.startswith("http"):
                 import urllib.request
 
                 with urllib.request.urlopen(css) as response:
-                    content = response.read().decode('utf-8')
+                    content = response.read().decode("utf-8")
             else:
                 content = css
 
-            self._css = content.replace(f'#{container}', f'#div').replace(
-                f'.{container}', f'.div'
+            self._css = content.replace(f"#{container}", f"#div").replace(
+                f".{container}", f".div"
             )
         else:
-            raise TypeError('css must be a string')
+            raise TypeError("css must be a string")
 
-    def _create_esm(self, esm, container='map'):
+    def _create_esm(self, esm, container="map"):
         """Create esm string by replacing the container name.
 
         Args:
@@ -87,26 +96,26 @@ class Map(anywidget.AnyWidget):
             str: The esm string with the container name replaced.
         """
         _cwd = os.path.dirname(os.path.abspath(__file__))
-        _esm = pathlib.Path(os.path.join(_cwd, 'javascript', 'maplibre.js'))
+        _esm = pathlib.Path(os.path.join(_cwd, "javascript", "maplibre.js"))
 
-        with open(_esm, 'r') as f:
+        with open(_esm, "r") as f:
             lines = f.readlines()
 
         header = []
         footer = []
 
         for index, line in enumerate(lines):
-            if line.strip() == '// Map content':
+            if line.strip() == "// Map content":
                 header = lines[: index + 1]
                 break
 
         for index, line in enumerate(lines):
-            if line.strip() == '// Footer':
+            if line.strip() == "// Footer":
                 footer = lines[index:]
                 break
 
-        content = esm.replace(f"'{container}'", "div").replace(f'"{container}"', 'div')
-        esm = ''.join(header) + content + ''.join(footer)
+        content = esm.replace(f"'{container}'", "div").replace(f'"{container}"', "div")
+        esm = "".join(header) + content + "".join(footer)
 
         return esm
 
@@ -117,5 +126,5 @@ class Map(anywidget.AnyWidget):
             output (str): The output file path.
         """
 
-        with open(output, 'w') as f:
+        with open(output, "w") as f:
             f.write(self._esm)
