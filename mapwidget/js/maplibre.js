@@ -70,48 +70,23 @@ function render({ model, el }) {
         });
 
         // Support JS calls from Python
-        map.on("load", () => {
-            model.on("change:calls", async () => {
-                const calls = model.get("calls") || [];
-
-                for (const call of calls) {
-                    const { method, args = [], returnResult, call_id } = call;
-
-                    console.log("Processing call:", call);  // Optional debug log
-
-                    if (typeof map[method] === "function") {
-                        try {
-                            const result = map[method](...args);
-                            const resolved = result instanceof Promise ? await result : result;
-
-                            if (returnResult && call_id) {
-                                const allResults = model.get("call_results") || {};
-                                allResults[call_id] = {
-                                    method,
-                                    result: resolved
-                                };
-                                model.set("call_results", allResults);
-                                model.save_changes();
-                            }
-                        } catch (err) {
-                            if (returnResult && call_id) {
-                                const allResults = model.get("call_results") || {};
-                                allResults[call_id] = {
-                                    method,
-                                    error: err.message
-                                };
-                                model.set("call_results", allResults);
-                                model.save_changes();
-                            }
-                        }
+        model.on("change:calls", () => {
+            const calls = model.get("calls") || [];
+            calls.forEach(({ method, args }) => {
+                console.log(`Calling map.${method} with args: ${JSON.stringify(args)}`);
+                if (typeof map[method] === "function") {
+                    try {
+                        map[method](...(args || []));
+                    } catch (err) {
+                        console.warn(`map.${method} failed`, err);
                     }
+                } else {
+                    console.warn(`map.${method} is not a function`);
                 }
-
-                model.set("calls", []);
-                model.save_changes();
             });
+            model.set("calls", []);
+            model.save_changes();
         });
-
 
         // Resize after layout stabilizes
         setTimeout(() => map.resize(), 100);
