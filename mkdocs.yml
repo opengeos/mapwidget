@@ -2,7 +2,7 @@ site_name: mapwidget
 
 site_url: https://mapwidget.gishub.org
 
-repo_url: https://github.com/giswqs/mapwidget
+repo_url: https://github.com/opengeos/mapwidget
 
 theme:
     palette:
@@ -47,7 +47,7 @@ nav:
     - Contributing: contributing.md
     - FAQ: faq.md
     - Changelog: changelog.md
-    - Report Issues: https://github.com/giswqs/mapwidget/issues
+    - Report Issues: https://github.com/opengeos/mapwidget/issues
     - Examples:
           - examples/cesium.ipynb
           - examples/leaflet.ipynb
