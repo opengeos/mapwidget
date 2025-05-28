@@ -19,10 +19,10 @@ conda install -c conda-forge mapwidget
 
 ## Use docker
 
-You can also use [docker](https://hub.docker.com/r/giswqs/mapwidget/) to run mapwidget:
+You can also use [docker](https://hub.docker.com/r/opengeos/mapwidget/) to run mapwidget:
 
 ```bash
-docker run -it -p 8888:8888 giswqs/mapwidget:latest
+docker run -it -p 8888:8888 opengeos/mapwidget:latest
 ```
 
 ## From sources
@@ -32,5 +32,5 @@ The sources for mapwidget can be downloaded from the Github repo.
 You can clone the public repository:
 
 ```
-git clone git://github.com/giswqs/mapwidget
+git clone git://github.com/opengeos/mapwidget
 ```
