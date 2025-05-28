@@ -12,8 +12,8 @@ class Map(anywidget.AnyWidget):
     """
 
     _cwd = os.path.dirname(os.path.abspath(__file__))
-    _esm = pathlib.Path(os.path.join(_cwd, "javascript", "openlayers.js"))
-    _css = pathlib.Path(os.path.join(_cwd, "styles", "openlayers.css"))
+    _esm = pathlib.Path(os.path.join(_cwd, "js", "openlayers.js"))
+    _css = pathlib.Path(os.path.join(_cwd, "css", "openlayers.css"))
     center = traitlets.List([0, 20]).tag(sync=True, o=True)
     zoom = traitlets.Float(2).tag(sync=True, o=True)
     bounds = traitlets.List([0, 0, 0, 0]).tag(sync=True, o=True)

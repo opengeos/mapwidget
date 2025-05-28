@@ -8,8 +8,8 @@ class Map(anywidget.AnyWidget):
     """Create a Mapbox map widget."""
 
     _cwd = os.path.dirname(os.path.abspath(__file__))
-    _esm = pathlib.Path(os.path.join(_cwd, "javascript", "mapbox.js"))
-    _css = pathlib.Path(os.path.join(_cwd, "styles", "mapbox.css"))
+    _esm = pathlib.Path(os.path.join(_cwd, "js", "mapbox.js"))
+    _css = pathlib.Path(os.path.join(_cwd, "css", "mapbox.css"))
     default_token = os.environ.get("MAPBOX_TOKEN")
     token = traitlets.Unicode(default_token).tag(sync=True)
     center = traitlets.List([0, 20]).tag(sync=True, o=True)
@@ -89,7 +89,7 @@ class Map(anywidget.AnyWidget):
             str: The esm string with the container name replaced.
         """
         _cwd = os.path.dirname(os.path.abspath(__file__))
-        _esm = pathlib.Path(os.path.join(_cwd, "javascript", "mapbox.js"))
+        _esm = pathlib.Path(os.path.join(_cwd, "js", "mapbox.js"))
 
         with open(_esm, "r") as f:
             lines = f.readlines()

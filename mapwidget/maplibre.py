@@ -8,8 +8,8 @@ class Map(anywidget.AnyWidget):
     """Create a MapLibre map widget."""
 
     _cwd = os.path.dirname(os.path.abspath(__file__))
-    _esm = pathlib.Path(os.path.join(_cwd, "javascript", "maplibre.js"))
-    _css = pathlib.Path(os.path.join(_cwd, "styles", "maplibre.css"))
+    _esm = pathlib.Path(os.path.join(_cwd, "js", "maplibre.js"))
+    _css = pathlib.Path(os.path.join(_cwd, "css", "maplibre.css"))
     center = traitlets.List([0, 20]).tag(sync=True, o=True)
     zoom = traitlets.Float(2).tag(sync=True, o=True)
     bounds = traitlets.List([0, 0, 0, 0]).tag(sync=True, o=True)
@@ -96,7 +96,7 @@ class Map(anywidget.AnyWidget):
             str: The esm string with the container name replaced.
         """
         _cwd = os.path.dirname(os.path.abspath(__file__))
-        _esm = pathlib.Path(os.path.join(_cwd, "javascript", "maplibre.js"))
+        _esm = pathlib.Path(os.path.join(_cwd, "js", "maplibre.js"))
 
         with open(_esm, "r") as f:
             lines = f.readlines()
