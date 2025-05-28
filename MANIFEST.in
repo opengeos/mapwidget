@@ -5,5 +5,5 @@ include requirements.txt
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 
-recursive-include mapwidget/styles *
-recursive-include mapwidget/javascript *
+recursive-include mapwidget/css *
+recursive-include mapwidget/js *
