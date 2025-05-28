@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mapwidget"
-version = "0.1.2"
+version = "0.2.0"
 description = "Custom Jupyter widgets for creating interactive maps"
 authors = [
     { name = "Qiusheng Wu", email = "giswqs@gmail.com" }
@@ -38,7 +38,7 @@ exclude = ["docs*"]
 universal = true
 
 [tool.bumpversion]
-current_version = "0.1.2"
+current_version = "0.2.0"
 commit = true
 tag = true
 
