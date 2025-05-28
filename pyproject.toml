@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mapwidget"
+version = "0.1.2"
+description = "Custom Jupyter widgets for creating interactive maps"
+authors = [
+    { name = "Qiusheng Wu", email = "giswqs@gmail.com" }
+]
+license = { text = "MIT license" }
+readme = "README.md"
+keywords = ["mapwidget"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+  "anywidget>=0.9.0",
+  "xyzservices>=2025.4.0"
+]
+
+[tool.setuptools.packages.find]
+include = ["mapwidget*"]
+exclude = ["docs*"]
+
+[tool.distutils.bdist_wheel]
+universal = true
+
+[tool.bumpversion]
+current_version = "0.46.9"
+commit = true
+tag = true
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "mapwidget/__init__.py"
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'
+
+[tool.flake8]
+exclude = [
+    "docs",
+]
+max-line-length = 88
+
+[tool.setuptools_scm]
+
+[tool.uv]
+find-links = ["https://girder.github.io/large_image_wheels"]
+
+[project.urls]
+Homepage = "https://github.com/opengeos/mapwidget"
