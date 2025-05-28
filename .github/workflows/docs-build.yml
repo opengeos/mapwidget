@@ -1,10 +1,11 @@
-name: docs
+name: docs-build
 on:
-    push:
+    pull_request:
         branches:
             - master
+
 jobs:
-    deploy:
+    docs-build:
         runs-on: ubuntu-latest
         strategy:
             matrix:
@@ -45,4 +46,23 @@ jobs:
             - name: Install mkdocs
               run: |
                   uv pip install -r requirements_docs.txt
-                  uv run mkdocs gh-deploy --force
+                  uv run mkdocs build
+
+            - name: Deploy to Netlify
+              uses: nwtgck/actions-netlify@v3.0
+              with:
+                  publish-dir: "./site"
+                  production-branch: master
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  deploy-message: "Deploy from GitHub Actions"
+                  enable-pull-request-comment: true
+                  enable-commit-comment: false
+                  overwrites-pull-request-comment: true
+              env:
+                  NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+                  NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+            - name: Cleanup
+              if: always()
+              run: |
+                  echo "Cleaning up resources."

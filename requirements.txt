@@ -1,2 +1,0 @@
-anywidget[dev]
-xyzservices
