@@ -932,13 +932,13 @@ function render({ model, el }) {
                 // Add control to map
                 map.addControl(opacity, position);
                 console.log(`Added opacity control at ${position}`);
-                
+
                 // IMPORTANT: Set default visibility AFTER the control is created
                 // This overrides the plugin's default behavior of hiding overlay layers
                 setTimeout(() => {
                     setLayerDefaultVisibility(map, baseLayers, overLayers, defaultVisibility);
                 }, 100);
-                
+
                 controlRegistry.set("opacity", opacity);
             } catch (err) {
                 console.error("Failed to add opacity control:", err);
@@ -950,15 +950,15 @@ function render({ model, el }) {
             // Handle base layers - only first one visible by default unless specified
             const baseLayerIds = Object.keys(baseLayers);
             baseLayerIds.forEach((layerId, index) => {
-                const visibility = defaultVisibility[layerId] !== undefined 
+                const visibility = defaultVisibility[layerId] !== undefined
                     ? (defaultVisibility[layerId] ? "visible" : "none")
                     : (index === 0 ? "visible" : "none"); // First base layer visible by default
-                
+
                 try {
                     if (map.getLayer(layerId)) {
                         map.setLayoutProperty(layerId, "visibility", visibility);
                         console.log(`Set ${layerId} visibility to ${visibility}`);
-                        
+
                         // Also update the checkbox/radio state to match
                         const control = document.getElementById(layerId);
                         if (control) {
@@ -976,12 +976,12 @@ function render({ model, el }) {
                 const visibility = defaultVisibility[layerId] !== undefined
                     ? (defaultVisibility[layerId] ? "visible" : "none")
                     : "visible"; // Overlays visible by default
-                
+
                 try {
                     if (map.getLayer(layerId)) {
                         map.setLayoutProperty(layerId, "visibility", visibility);
                         console.log(`Set ${layerId} visibility to ${visibility}`);
-                        
+
                         // Also update the checkbox state to match
                         const control = document.getElementById(layerId);
                         if (control) {
@@ -1022,23 +1022,23 @@ function render({ model, el }) {
                     this._container = document.createElement('div');
                     this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group';
                     this._container.appendChild(toggleButton);
-                    
+
                     // Toggle opacity control visibility
                     let isVisible = true;
-                    
+
                     toggleButton.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        
+
                         // Use a timeout to ensure the opacity control is rendered
                         setTimeout(() => {
                             // Find the opacity control element
-                            const opacityContainer = document.getElementById('opacity-control') || 
+                            const opacityContainer = document.getElementById('opacity-control') ||
                                 document.querySelector('.maplibregl-ctrl-group:has(input[type="range"])') ||
                                 document.querySelector('.maplibregl-ctrl-group:has(input[type="checkbox"])');
-                            
+
                             // console.log('Toggle clicked, opacity control found:', opacityContainer);
-                            
+
                             if (opacityContainer) {
                                 if (isVisible) {
                                     opacityContainer.style.display = 'none';
