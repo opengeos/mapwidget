@@ -5,4 +5,4 @@ __email__ = "giswqs@gmail.com"
 __version__ = "0.2.0"
 
 
-from .leaflet import *
+from .maplibre import *
