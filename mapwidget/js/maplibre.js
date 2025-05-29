@@ -346,7 +346,7 @@ function render({ model, el }) {
                 map.removeControl(draw);
                 console.log("Removed draw control");
                 controlRegistry.delete("draw");
-                
+
                 // Clear draw features from model
                 model.set("draw_features_selected", []);
                 model.set("draw_feature_collection_all", { type: "FeatureCollection", features: [] });
@@ -368,7 +368,7 @@ function render({ model, el }) {
                     const featureIds = allFeatures.features.map(f => f.id);
                     draw.delete(featureIds);
                     console.log("Deleted all draw features");
-                    
+
                     // Update model
                     model.set("draw_features_deleted", allFeatures.features);
                     updateDrawFeatures(map, draw);
