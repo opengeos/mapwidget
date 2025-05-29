@@ -91,6 +91,36 @@ function render({ model, el }) {
         document.body.appendChild(script);
     }
 
+    // Function to load MapLibre GL Opacity if not available
+    function loadMaplibreOpacity(callback) {
+        if (typeof OpacityControl !== "undefined") {
+            callback();
+            return;
+        }
+
+        // Inject maplibre-gl-opacity CSS if not already loaded
+        if (!document.getElementById("maplibre-gl-opacity-css")) {
+            const link = document.createElement("link");
+            link.id = "maplibre-gl-opacity-css";
+            link.rel = "stylesheet";
+            link.href =
+                "https://www.unpkg.com/maplibre-gl-opacity@1.8.0/build/maplibre-gl-opacity.css";
+            document.head.appendChild(link);
+        }
+
+        const script = document.createElement("script");
+        script.src =
+            "https://www.unpkg.com/maplibre-gl-opacity@1.8.0/build/maplibre-gl-opacity.umd.js";
+        script.onload = () => {
+            callback();
+        };
+        script.onerror = () => {
+            console.error("Failed to load MapLibre GL Opacity library");
+            callback(); // Still call callback to prevent hanging
+        };
+        document.body.appendChild(script);
+    }
+
     // Custom repeat modes for continuous drawing
     function createRepeatModes() {
         const RepeatPointMode = {};
@@ -383,6 +413,10 @@ function render({ model, el }) {
                             "Draw control not available or changeMode is not a function"
                         );
                     }
+                } else if (method === "addOpacityControl") {
+                    // Handle addOpacityControl specially
+                    const [baseLayers, overLayers, options, position, defaultVisibility] = args;
+                    addOpacityControlToMap(map, baseLayers, overLayers, options, position, defaultVisibility);
                 } else if (typeof map[method] === "function") {
                     try {
                         map[method](...(args || []));
@@ -856,6 +890,184 @@ function render({ model, el }) {
             } catch (err) {
                 console.error("Failed to add legend control:", err);
             }
+        }
+
+        // Function to add opacity control to the map
+        function addOpacityControlToMap(
+            map,
+            baseLayers = {},
+            overLayers = {},
+            options = {},
+            position = "top-right",
+            defaultVisibility = {}
+        ) {
+            // Check if OpacityControl is available
+            if (typeof OpacityControl === "undefined") {
+                console.log(
+                    "OpacityControl is not loaded. Loading now..."
+                );
+                loadMaplibreOpacity(() =>
+                    addOpacityControlToMap(map, baseLayers, overLayers, options, position, defaultVisibility)
+                );
+                return;
+            }
+
+            try {
+                // Merge provided options with layer configurations
+                const opacityOptions = {
+                    baseLayers: baseLayers,
+                    overLayers: overLayers,
+                    opacityControl: true, // Default to showing opacity controls
+                    ...options
+                };
+
+                // Handle collapsible functionality BEFORE adding the main control
+                if (options.collapsible) {
+                    addOpacityControlToggle(map, null, position);
+                }
+
+                // Create opacity control
+                const opacity = new OpacityControl(opacityOptions);
+
+                // Add control to map
+                map.addControl(opacity, position);
+                console.log(`Added opacity control at ${position}`);
+
+                // IMPORTANT: Set default visibility AFTER the control is created
+                // This overrides the plugin's default behavior of hiding overlay layers
+                setTimeout(() => {
+                    setLayerDefaultVisibility(map, baseLayers, overLayers, defaultVisibility);
+                }, 100);
+
+                controlRegistry.set("opacity", opacity);
+            } catch (err) {
+                console.error("Failed to add opacity control:", err);
+            }
+        }
+
+        // Function to set default visibility for layers
+        function setLayerDefaultVisibility(map, baseLayers, overLayers, defaultVisibility) {
+            // Handle base layers - only first one visible by default unless specified
+            const baseLayerIds = Object.keys(baseLayers);
+            baseLayerIds.forEach((layerId, index) => {
+                const visibility = defaultVisibility[layerId] !== undefined
+                    ? (defaultVisibility[layerId] ? "visible" : "none")
+                    : (index === 0 ? "visible" : "none"); // First base layer visible by default
+
+                try {
+                    if (map.getLayer(layerId)) {
+                        map.setLayoutProperty(layerId, "visibility", visibility);
+                        console.log(`Set ${layerId} visibility to ${visibility}`);
+
+                        // Also update the checkbox/radio state to match
+                        const control = document.getElementById(layerId);
+                        if (control) {
+                            control.checked = (visibility === "visible");
+                        }
+                    }
+                } catch (err) {
+                    console.warn(`Failed to set visibility for ${layerId}:`, err);
+                }
+            });
+
+            // Handle overlay layers - visible by default unless specified
+            const overlayLayerIds = Object.keys(overLayers);
+            overlayLayerIds.forEach((layerId) => {
+                const visibility = defaultVisibility[layerId] !== undefined
+                    ? (defaultVisibility[layerId] ? "visible" : "none")
+                    : "visible"; // Overlays visible by default
+
+                try {
+                    if (map.getLayer(layerId)) {
+                        map.setLayoutProperty(layerId, "visibility", visibility);
+                        console.log(`Set ${layerId} visibility to ${visibility}`);
+
+                        // Also update the checkbox state to match
+                        const control = document.getElementById(layerId);
+                        if (control) {
+                            control.checked = (visibility === "visible");
+                        }
+                    }
+                } catch (err) {
+                    console.warn(`Failed to set visibility for ${layerId}:`, err);
+                }
+            });
+        }
+
+        // Function to add toggle button for collapsible opacity control
+        function addOpacityControlToggle(map, opacityControl, position) {
+            // Create toggle button
+            const toggleButton = document.createElement("button");
+            toggleButton.innerHTML = "☰"; // Layer control icon
+            toggleButton.title = "Toggle Layer Control";
+            toggleButton.style.cssText = `
+                background: white;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                width: 30px;
+                height: 30px;
+                font-size: 16px;
+                cursor: pointer;
+                box-shadow: 0 0 0 0px rgba(0,0,0,0.1);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 0px;
+            `;
+
+            // Create wrapper for toggle functionality
+            const toggleControl = {
+                onAdd: function(map) {
+                    this._map = map;
+                    this._container = document.createElement('div');
+                    this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group';
+                    this._container.appendChild(toggleButton);
+
+                    // Toggle opacity control visibility
+                    let isVisible = true;
+
+                    toggleButton.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        // Use a timeout to ensure the opacity control is rendered
+                        setTimeout(() => {
+                            // Find the opacity control element
+                            const opacityContainer = document.getElementById('opacity-control') ||
+                                document.querySelector('.maplibregl-ctrl-group:has(input[type="range"])') ||
+                                document.querySelector('.maplibregl-ctrl-group:has(input[type="checkbox"])');
+
+                            // console.log('Toggle clicked, opacity control found:', opacityContainer);
+
+                            if (opacityContainer) {
+                                if (isVisible) {
+                                    opacityContainer.style.display = 'none';
+                                    toggleButton.style.opacity = '0.6';
+                                    toggleButton.title = 'Show Layer Control';
+                                } else {
+                                    opacityContainer.style.display = 'block';
+                                    toggleButton.style.opacity = '1';
+                                    toggleButton.title = 'Hide Layer Control';
+                                }
+                                isVisible = !isVisible;
+                            } else {
+                                console.warn('Opacity control not found for toggling');
+                            }
+                        }, 200);
+                    });
+
+                    return this._container;
+                },
+                onRemove: function() {
+                    this._container.parentNode.removeChild(this._container);
+                    this._map = undefined;
+                }
+            };
+
+            // Add toggle control immediately
+            map.addControl(toggleControl, position);
+            controlRegistry.set("opacity-toggle", toggleControl);
+            console.log('Toggle control added at position:', position);
         }
 
         // Resize after layout stabilizes
