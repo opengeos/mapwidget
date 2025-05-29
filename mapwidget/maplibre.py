@@ -63,6 +63,8 @@ class Map(anywidget.AnyWidget):
             controls: List of controls to add by default. Defaults to ["navigation", "fullscreen", "globe"]
             **kwargs: Additional widget parameters
         """
+        self._draw_control_request = None
+
         super().__init__(
             center=center,
             zoom=zoom,
@@ -87,10 +89,14 @@ class Map(anywidget.AnyWidget):
                 self.add_control(control, "top-right")
             self._default_controls = []  # Clear to avoid re-adding
 
+        if self._draw_control_request:
+            self.add_call("addDrawControl", self._draw_control_request)
+            self._draw_control_request = None
+
     @property
     def layers(self):
         """Get the current style of the map."""
-        return self.style.get("layers", [])
+        return self.root.get("layers", [])
 
     @property
     def layer_names(self):
@@ -264,7 +270,10 @@ class Map(anywidget.AnyWidget):
         # Merge kwargs into options
         options.update(kwargs)
 
-        self.add_call("addDrawControl", [options, controls, position, geojson])
+        if self.loaded:
+            self.add_call("addDrawControl", [options, controls, position, geojson])
+        else:
+            self._draw_control_request = [options, controls, position, geojson]
 
     def remove_draw_control(self) -> None:
         """
