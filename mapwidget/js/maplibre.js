@@ -61,6 +61,186 @@ function render({ model, el }) {
         document.body.appendChild(script);
     }
 
+    // Function to load MapboxLegend if not available
+    function loadMapboxLegend(callback) {
+        if (typeof MapboxLegendControl !== "undefined") {
+            callback();
+            return;
+        }
+
+        // Inject mapbox-gl-legend CSS if not already loaded
+        if (!document.getElementById("mapbox-gl-legend-css")) {
+            const link = document.createElement("link");
+            link.id = "mapbox-gl-legend-css";
+            link.rel = "stylesheet";
+            link.href =
+                "https://watergis.github.io/mapbox-gl-legend/mapbox-gl-legend.css";
+            document.head.appendChild(link);
+        }
+
+        const script = document.createElement("script");
+        script.src =
+            "https://watergis.github.io/mapbox-gl-legend/mapbox-gl-legend.js";
+        script.onload = () => {
+            callback();
+        };
+        script.onerror = () => {
+            console.error("Failed to load MapboxLegend library");
+            callback(); // Still call callback to prevent hanging
+        };
+        document.body.appendChild(script);
+    }
+
+    // Custom repeat modes for continuous drawing
+    function createRepeatModes() {
+        const RepeatPointMode = {};
+        RepeatPointMode.onSetup = function () {
+            return {};
+        };
+        RepeatPointMode.onClick = function (state, e) {
+            const point = this.newFeature({
+                type: "Feature",
+                properties: {},
+                geometry: {
+                    type: "Point",
+                    coordinates: [e.lngLat.lng, e.lngLat.lat],
+                },
+            });
+            this.addFeature(point);
+        };
+        RepeatPointMode.onKeyUp = function (state, e) {
+            if (e.keyCode === 27) {
+                // Esc key
+                model.set("draw_repeat_mode", false);
+                model.save_changes();
+                return this.changeMode("simple_select");
+            }
+        };
+        RepeatPointMode.toDisplayFeatures = function (state, geojson, display) {
+            display(geojson);
+        };
+
+        const RepeatLineMode = {
+            onSetup: function() {
+                const line = this.newFeature({
+                    type: 'Feature',
+                    properties: {},
+                    geometry: {
+                        type: 'LineString',
+                        coordinates: []
+                    }
+                });
+                this.addFeature(line);
+                this.clearSelectedFeatures();
+                this.updateUIClasses({ mouse: 'add' });
+                this.activateUIButton('line');
+                this.setActionableState({ trash: true });
+                return {
+                    line,
+                    currentVertexPosition: 0
+                };
+            },
+            onClick: function(state, e) {
+                const coords = state.line.coordinates;
+                if (coords.length >= 2 && e.originalEvent.detail === 2) {
+                    // Double-click: finish line
+                    if (state.line.isValid()) {
+                        this.addFeature(state.line);
+                    }
+                    this.changeMode('repeat_line');
+                    return;
+                }
+
+                state.line.updateCoordinate(`${state.currentVertexPosition}`, e.lngLat.lng, e.lngLat.lat);
+                state.currentVertexPosition++;
+                state.line.updateCoordinate(`${state.currentVertexPosition}`, e.lngLat.lng, e.lngLat.lat);
+            },
+            onKeyUp: function(state, e) {
+                if (e.keyCode === 27) {
+                    model.set("draw_repeat_mode", false);
+                    model.save_changes();
+                    return this.changeMode('simple_select');
+                }
+            },
+            onMouseMove: function(state, e) {
+                state.line.updateCoordinate(`${state.currentVertexPosition}`, e.lngLat.lng, e.lngLat.lat);
+            },
+            toDisplayFeatures: function(state, geojson, display) {
+                display(geojson);
+            }
+        };
+
+        const RepeatPolygonMode = {
+            onSetup: function() {
+                const polygon = this.newFeature({
+                    type: 'Feature',
+                    properties: {},
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [[]]
+                    }
+                });
+                this.addFeature(polygon);
+                this.clearSelectedFeatures();
+                this.updateUIClasses({ mouse: 'add' });
+                this.activateUIButton('polygon');
+                this.setActionableState({ trash: true });
+                return {
+                    polygon,
+                    currentVertexPosition: 0
+                };
+            },
+            onClick: function(state, e) {
+                const coords = state.polygon.coordinates[0];
+
+                // Double-click to finish polygon
+                if (coords.length >= 3 && e.originalEvent.detail === 2) {
+                    if (state.polygon.isValid()) {
+                        this.addFeature(state.polygon);
+                    }
+                    this.changeMode('repeat_polygon');
+                    return;
+                }
+
+                const lng = e.lngLat.lng;
+                const lat = e.lngLat.lat;
+                const idx = state.currentVertexPosition;
+
+                // First point: initialize second point for immediate feedback
+                if (idx === 0) {
+                    state.polygon.updateCoordinate(`0.${idx}`, lng, lat);
+                    state.polygon.updateCoordinate(`0.${idx + 1}`, lng, lat); // duplicate
+                    state.currentVertexPosition += 2;
+                } else {
+                    state.polygon.updateCoordinate(`0.${idx}`, lng, lat);
+                    state.currentVertexPosition++;
+                    state.polygon.updateCoordinate(`0.${state.currentVertexPosition}`, lng, lat);
+                }
+            }
+            ,
+            onKeyUp: function(state, e) {
+                if (e.keyCode === 27) {
+                    model.set("draw_repeat_mode", false);
+                    model.save_changes();
+                    return this.changeMode('simple_select');
+                }
+            },
+            onMouseMove: function(state, e) {
+                state.polygon.updateCoordinate(`0.${state.currentVertexPosition}`, e.lngLat.lng, e.lngLat.lat);
+            },
+            toDisplayFeatures: function(state, geojson, display) {
+                display(geojson);
+            }
+        };
+
+
+        return {
+            repeat_point: RepeatPointMode,
+            repeat_line: RepeatLineMode,
+            repeat_polygon: RepeatPolygonMode,
+        };
+    }
+
     // Load UMD JS if not already loaded
     function initMap() {
         el.innerHTML = "";
@@ -189,6 +369,20 @@ function render({ model, el }) {
                 } else if (method === "drawFeaturesDeleteAll") {
                     // Handle delete all draw features
                     deleteAllDrawFeatures(map);
+                } else if (method === "addLegendControl") {
+                    // Handle addLegendControl specially
+                    const [targets, options, position] = args;
+                    addLegendControlToMap(map, targets, options, position);
+                } else if (method === "setDrawMode") {
+                    const [mode] = args;
+                    const draw = controlRegistry.get("draw");
+                    if (draw && typeof draw.changeMode === "function") {
+                        draw.changeMode(mode);
+                    } else {
+                        console.warn(
+                            "Draw control not available or changeMode is not a function"
+                        );
+                    }
                 } else if (typeof map[method] === "function") {
                     try {
                         map[method](...(args || []));
@@ -317,6 +511,9 @@ function render({ model, el }) {
                 // Merge provided controls with defaults
                 const drawControls = { ...defaultControls, ...controls };
 
+                // Create custom repeat modes
+                const customModes = createRepeatModes();
+
                 // Default options with custom styles to fix validation issues
                 const defaultOptions = {
                     displayControlsDefault: false,
@@ -328,6 +525,8 @@ function render({ model, el }) {
                         combine_features: drawControls.combine_features,
                         uncombine_features: drawControls.uncombine_features,
                     },
+                    // Add custom repeat modes to the available modes
+                    modes: Object.assign({}, MapboxDraw.modes, customModes),
                     // Override styles to fix line-dasharray issues for MapLibre GL JS compatibility
                     styles: [
                         // Point styles
@@ -485,6 +684,65 @@ function render({ model, el }) {
 
                 // Set up draw event handlers
                 setupDrawEventHandlers(map, draw);
+
+                // Monitor repeat mode changes
+                model.on("change:draw_repeat_mode", () => {
+                    const repeatMode = model.get("draw_repeat_mode");
+                    if (repeatMode) {
+                        // Switch to repeat mode based on current mode
+                        const currentMode = draw.getMode();
+                        if (currentMode === "draw_polygon") {
+                            draw.changeMode("repeat_polygon");
+                        } else if (currentMode === "draw_line_string") {
+                            draw.changeMode("repeat_line");
+                        } else if (currentMode === "draw_point") {
+                            draw.changeMode("repeat_point");
+                        }
+                    } else {
+                        // Return to simple select mode
+                        draw.changeMode("simple_select");
+                    }
+                });
+
+                // Override draw button handlers to support repeat mode
+                const drawContainer = document.querySelector(
+                    ".maplibregl-ctrl-group .mapbox-gl-draw_ctrl-draw-btn"
+                );
+                if (drawContainer) {
+                    // Add event listeners to draw buttons to check repeat mode
+                    const polygonBtn = drawContainer.querySelector(
+                        ".mapbox-gl-draw_polygon"
+                    );
+                    const lineBtn = drawContainer.querySelector(
+                        ".mapbox-gl-draw_line"
+                    );
+                    const pointBtn = drawContainer.querySelector(
+                        ".mapbox-gl-draw_point"
+                    );
+
+                    [polygonBtn, lineBtn, pointBtn].forEach((btn) => {
+                        if (btn) {
+                            btn.addEventListener("click", () => {
+                                if (model.get("draw_repeat_mode")) {
+                                    setTimeout(() => {
+                                        const currentMode = draw.getMode();
+                                        if (currentMode === "draw_polygon") {
+                                            draw.changeMode("repeat_polygon");
+                                        } else if (
+                                            currentMode === "draw_line_string"
+                                        ) {
+                                            draw.changeMode("repeat_line");
+                                        } else if (
+                                            currentMode === "draw_point"
+                                        ) {
+                                            draw.changeMode("repeat_point");
+                                        }
+                                    }, 100);
+                                }
+                            });
+                        }
+                    });
+                }
             } catch (err) {
                 console.error("Failed to add draw control:", err);
             }
@@ -566,6 +824,37 @@ function render({ model, el }) {
                 }
             } else {
                 console.warn("Draw control not found");
+            }
+        }
+
+        // Function to add legend control to the map
+        function addLegendControlToMap(
+            map,
+            targets = {},
+            options = {},
+            position = "top-right"
+        ) {
+            // Check if MapboxLegendControl is available
+            if (typeof MapboxLegendControl === "undefined") {
+                console.log(
+                    "MapboxLegendControl is not loaded. Loading now..."
+                );
+                loadMapboxLegend(() =>
+                    addLegendControlToMap(map, targets, options, position)
+                );
+                return;
+            }
+
+            try {
+                // Create legend control
+                const legend = new MapboxLegendControl(targets, options);
+
+                // Add control to map
+                map.addControl(legend, position);
+                console.log(`Added legend control at ${position}`);
+                controlRegistry.set("legend", legend);
+            } catch (err) {
+                console.error("Failed to add legend control:", err);
             }
         }
 

@@ -44,6 +44,7 @@ class Map(anywidget.AnyWidget):
     draw_features_deleted = traitlets.List(traitlets.Dict(), default_value=[]).tag(
         sync=True
     )
+    draw_repeat_mode = traitlets.Bool(False).tag(sync=True)
 
     def __init__(
         self,
@@ -92,6 +93,16 @@ class Map(anywidget.AnyWidget):
         if self._draw_control_request:
             self.add_call("addDrawControl", self._draw_control_request)
             self._draw_control_request = None
+
+        if hasattr(self, "_pending_draw_mode"):
+            for mode in self._pending_draw_mode:
+                self.add_call("setDrawMode", [mode])
+            del self._pending_draw_mode
+
+        if hasattr(self, "_pending_legend"):
+            for targets, options, position in self._pending_legend:
+                self.add_call("addLegendControl", [targets, options, position])
+            del self._pending_legend
 
     @property
     def layers(self):
@@ -298,3 +309,49 @@ class Map(anywidget.AnyWidget):
             None
         """
         self.add_call("drawFeaturesDeleteAll")
+
+    def add_legend(
+        self,
+        targets: Dict[str, str],
+        options: Optional[Dict[str, Any]] = None,
+        position: str = "top-right",
+    ) -> None:
+        """
+        Adds a legend control to the map using mapbox-gl-legend plugin.
+
+        Args:
+            targets (Dict[str, str]): A dictionary mapping layer IDs to display names
+            options (Optional[Dict[str, Any]]): Configuration options for the legend control.
+                Available options:
+                - showDefault (bool): Whether to show default legend. Defaults to False.
+                - showCheckbox (bool): Whether to show checkboxes. Defaults to False.
+                - onlyRendered (bool): Whether to show only rendered layers. Defaults to True.
+                - reverseOrder (bool): Whether to reverse the order. Defaults to True.
+            position (str): The position of the control on the map. Defaults to "top-right".
+
+        Returns:
+            None
+        """
+        if options is None:
+            options = {
+                "showDefault": False,
+                "showCheckbox": False,
+                "onlyRendered": True,
+                "reverseOrder": True,
+            }
+
+        if self.loaded:
+            self.add_call("addLegendControl", [targets, options, position])
+        else:
+            if not hasattr(self, "_pending_legend"):
+                self._pending_legend = []
+            self._pending_legend.append((targets, options, position))
+
+    def set_draw_mode(self, mode: str):
+        """Set the drawing mode, even if the map is not yet loaded."""
+        if self.loaded:
+            self.add_call("setDrawMode", [mode])
+        else:
+            if not hasattr(self, "_pending_draw_mode"):
+                self._pending_draw_mode = []
+            self._pending_draw_mode.append(mode)
