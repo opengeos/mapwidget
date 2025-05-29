@@ -150,7 +150,7 @@ function render({ model, el }) {
                     this.changeMode('repeat_line');
                     return;
                 }
-        
+
                 state.line.updateCoordinate(`${state.currentVertexPosition}`, e.lngLat.lng, e.lngLat.lat);
                 state.currentVertexPosition++;
                 state.line.updateCoordinate(`${state.currentVertexPosition}`, e.lngLat.lng, e.lngLat.lat);
@@ -169,7 +169,7 @@ function render({ model, el }) {
                 display(geojson);
             }
         };
-        
+
         const RepeatPolygonMode = {
             onSetup: function() {
                 const polygon = this.newFeature({
@@ -192,7 +192,7 @@ function render({ model, el }) {
             },
             onClick: function(state, e) {
                 const coords = state.polygon.coordinates[0];
-            
+
                 // Double-click to finish polygon
                 if (coords.length >= 3 && e.originalEvent.detail === 2) {
                     if (state.polygon.isValid()) {
@@ -201,11 +201,11 @@ function render({ model, el }) {
                     this.changeMode('repeat_polygon');
                     return;
                 }
-            
+
                 const lng = e.lngLat.lng;
                 const lat = e.lngLat.lat;
                 const idx = state.currentVertexPosition;
-            
+
                 // First point: initialize second point for immediate feedback
                 if (idx === 0) {
                     state.polygon.updateCoordinate(`0.${idx}`, lng, lat);
@@ -232,7 +232,7 @@ function render({ model, el }) {
                 display(geojson);
             }
         };
-        
+
 
         return {
             repeat_point: RepeatPointMode,
