@@ -106,10 +106,10 @@ function render({ model, el }) {
         // Support JS calls from Python
         model.on("change:calls", () => {
             const calls = model.get("calls") || [];
-            
+
             // Only process new calls that haven't been processed yet
             const newCalls = calls.slice(processedCallsCount);
-            
+
             newCalls.forEach(({ method, args }, index) => {
                 const callIndex = processedCallsCount + index;
                 console.log(
@@ -133,7 +133,7 @@ function render({ model, el }) {
                     console.warn(`map.${method} is not a function`);
                 }
             });
-            
+
             // Update the count of processed calls
             processedCallsCount = calls.length;
         });
@@ -141,10 +141,10 @@ function render({ model, el }) {
         // Function to add controls to the map
         function addControlToMap(map, controlType, position = "top-right", options = {}) {
             let control;
-            
+
             // Normalize control type
             const type = controlType.toLowerCase().replace("control", "");
-            
+
             switch (type) {
                 case "navigation":
                     control = new maplibregl.NavigationControl(options);
@@ -174,7 +174,7 @@ function render({ model, el }) {
                     console.warn(`Unknown control type: ${controlType}`);
                     return;
             }
-            
+
             try {
                 map.addControl(control, position);
                 console.log(`Added ${controlType} control at ${position}`);
