@@ -3,6 +3,7 @@ import uuid
 import pathlib
 import anywidget
 import traitlets
+from typing import Optional, Dict, Any
 
 
 class Map(anywidget.AnyWidget):
@@ -27,6 +28,23 @@ class Map(anywidget.AnyWidget):
     controls = traitlets.List(traitlets.Dict(), default_value=[]).tag(sync=True, o=True)
     style = traitlets.Any().tag(sync=True)
 
+    # Draw-related traitlets
+    draw_features_selected = traitlets.List(traitlets.Dict(), default_value=[]).tag(
+        sync=True
+    )
+    draw_feature_collection_all = traitlets.Dict(
+        default_value={"type": "FeatureCollection", "features": []}
+    ).tag(sync=True)
+    draw_features_created = traitlets.List(traitlets.Dict(), default_value=[]).tag(
+        sync=True
+    )
+    draw_features_updated = traitlets.List(traitlets.Dict(), default_value=[]).tag(
+        sync=True
+    )
+    draw_features_deleted = traitlets.List(traitlets.Dict(), default_value=[]).tag(
+        sync=True
+    )
+
     def __init__(
         self,
         center=[0, 20],
@@ -35,7 +53,7 @@ class Map(anywidget.AnyWidget):
         pitch=0,
         style="https://tiles.openfreemap.org/styles/liberty",
         controls=None,
-        **kwargs
+        **kwargs,
     ):
         """Initialize the Map widget.
 
@@ -51,7 +69,7 @@ class Map(anywidget.AnyWidget):
             bearing=bearing,
             pitch=pitch,
             style=style,
-            **kwargs
+            **kwargs,
         )
 
         # Store default controls to add after initialization
@@ -205,3 +223,69 @@ class Map(anywidget.AnyWidget):
         self.controls = [
             control for control in self.controls if control["type"] != control_type
         ]
+
+    def add_draw_control(
+        self,
+        options: Optional[Dict[str, Any]] = None,
+        controls: Optional[Dict[str, Any]] = None,
+        position: str = "top-right",
+        geojson: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> None:
+        """
+        Adds a drawing control to the map.
+
+        This method enables users to add interactive drawing controls to the map,
+        allowing for the creation, editing, and deletion of geometric shapes on
+        the map. The options, position, and initial GeoJSON can be customized.
+
+        Args:
+            options (Optional[Dict[str, Any]]): Configuration options for the
+                drawing control. Defaults to None.
+            controls (Optional[Dict[str, Any]]): The drawing controls to enable.
+                Can be one or more of the following: 'polygon', 'line_string',
+                'point', 'trash', 'combine_features', 'uncombine_features'.
+                Defaults to None.
+            position (str): The position of the control on the map. Defaults
+                to "top-right".
+            geojson (Optional[Dict[str, Any]]): Initial GeoJSON data to load
+                into the drawing control. Defaults to None.
+            **kwargs (Any): Additional keyword arguments to be passed to the
+                drawing control.
+
+        Returns:
+            None
+        """
+        if options is None:
+            options = {}
+        if controls is None:
+            controls = {}
+
+        # Merge kwargs into options
+        options.update(kwargs)
+
+        self.add_call("addDrawControl", [options, controls, position, geojson])
+
+    def remove_draw_control(self) -> None:
+        """
+        Removes the drawing control from the map.
+
+        This method removes the drawing control and clears all associated
+        draw features from the map and model.
+
+        Returns:
+            None
+        """
+        self.add_call("removeDrawControl")
+
+    def draw_features_delete_all(self) -> None:
+        """
+        Deletes all features from the drawing control.
+
+        This method removes all drawn features from the map and updates
+        the model accordingly.
+
+        Returns:
+            None
+        """
+        self.add_call("drawFeaturesDeleteAll")
