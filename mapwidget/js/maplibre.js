@@ -29,6 +29,33 @@ function render({ model, el }) {
         model.save_changes();
     }
 
+    // Function to load MapboxDraw if not available
+    function loadMapboxDraw(callback) {
+        if (typeof MapboxDraw !== "undefined") {
+            callback();
+            return;
+        }
+
+        const script = document.createElement("script");
+        script.src = "https://www.unpkg.com/@mapbox/mapbox-gl-draw@1.5.0/dist/mapbox-gl-draw.js";
+        script.onload = () => {
+            // Patch MapboxDraw constants immediately after loading
+            if (MapboxDraw.constants && MapboxDraw.constants.classes) {
+                MapboxDraw.constants.classes.CANVAS = 'maplibregl-canvas';
+                MapboxDraw.constants.classes.CONTROL_BASE = 'maplibregl-ctrl';
+                MapboxDraw.constants.classes.CONTROL_PREFIX = 'maplibregl-ctrl-';
+                MapboxDraw.constants.classes.CONTROL_GROUP = 'maplibregl-ctrl-group';
+                MapboxDraw.constants.classes.ATTRIBUTION = 'maplibregl-ctrl-attrib';
+            }
+            callback();
+        };
+        script.onerror = () => {
+            console.error("Failed to load MapboxDraw library");
+        };
+        document.body.appendChild(script);
+    }
+
+
     // Load UMD JS if not already loaded
     function initMap() {
         el.innerHTML = "";
@@ -379,31 +406,6 @@ function render({ model, el }) {
             }
         }
 
-        // Function to load MapboxDraw if not available
-        function loadMapboxDraw(callback) {
-            if (typeof MapboxDraw !== "undefined") {
-                callback();
-                return;
-            }
-
-            const script = document.createElement("script");
-            script.src = "https://www.unpkg.com/@mapbox/mapbox-gl-draw@1.5.0/dist/mapbox-gl-draw.js";
-            script.onload = () => {
-                // Patch MapboxDraw constants immediately after loading
-                if (MapboxDraw.constants && MapboxDraw.constants.classes) {
-                    MapboxDraw.constants.classes.CANVAS = 'maplibregl-canvas';
-                    MapboxDraw.constants.classes.CONTROL_BASE = 'maplibregl-ctrl';
-                    MapboxDraw.constants.classes.CONTROL_PREFIX = 'maplibregl-ctrl-';
-                    MapboxDraw.constants.classes.CONTROL_GROUP = 'maplibregl-ctrl-group';
-                    MapboxDraw.constants.classes.ATTRIBUTION = 'maplibregl-ctrl-attrib';
-                }
-                callback();
-            };
-            script.onerror = () => {
-                console.error("Failed to load MapboxDraw library");
-            };
-            document.body.appendChild(script);
-        }
 
         // Resize after layout stabilizes
         setTimeout(() => map.resize(), 100);
