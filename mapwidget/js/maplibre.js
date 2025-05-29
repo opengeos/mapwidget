@@ -8,15 +8,6 @@ function render({ model, el }) {
         document.head.appendChild(link);
     }
 
-    // Inject mapbox-gl-draw CSS if not already loaded
-    if (!document.getElementById("mapbox-gl-draw-css")) {
-        const link = document.createElement("link");
-        link.id = "mapbox-gl-draw-css";
-        link.rel = "stylesheet";
-        link.href = "https://www.unpkg.com/@mapbox/mapbox-gl-draw@1.5.0/dist/mapbox-gl-draw.css";
-        document.head.appendChild(link);
-    }
-
     function updateModel(model, map) {
         const viewState = {
             center: map.getCenter(),
@@ -36,25 +27,39 @@ function render({ model, el }) {
             return;
         }
 
+        // Inject mapbox-gl-draw CSS if not already loaded
+        if (!document.getElementById("mapbox-gl-draw-css")) {
+            const link = document.createElement("link");
+            link.id = "mapbox-gl-draw-css";
+            link.rel = "stylesheet";
+            link.href =
+                "https://www.unpkg.com/@mapbox/mapbox-gl-draw@1.5.0/dist/mapbox-gl-draw.css";
+            document.head.appendChild(link);
+        }
+
         const script = document.createElement("script");
-        script.src = "https://www.unpkg.com/@mapbox/mapbox-gl-draw@1.5.0/dist/mapbox-gl-draw.js";
+        script.src =
+            "https://www.unpkg.com/@mapbox/mapbox-gl-draw@1.5.0/dist/mapbox-gl-draw.js";
         script.onload = () => {
             // Patch MapboxDraw constants immediately after loading
             if (MapboxDraw.constants && MapboxDraw.constants.classes) {
-                MapboxDraw.constants.classes.CANVAS = 'maplibregl-canvas';
-                MapboxDraw.constants.classes.CONTROL_BASE = 'maplibregl-ctrl';
-                MapboxDraw.constants.classes.CONTROL_PREFIX = 'maplibregl-ctrl-';
-                MapboxDraw.constants.classes.CONTROL_GROUP = 'maplibregl-ctrl-group';
-                MapboxDraw.constants.classes.ATTRIBUTION = 'maplibregl-ctrl-attrib';
+                MapboxDraw.constants.classes.CANVAS = "maplibregl-canvas";
+                MapboxDraw.constants.classes.CONTROL_BASE = "maplibregl-ctrl";
+                MapboxDraw.constants.classes.CONTROL_PREFIX =
+                    "maplibregl-ctrl-";
+                MapboxDraw.constants.classes.CONTROL_GROUP =
+                    "maplibregl-ctrl-group";
+                MapboxDraw.constants.classes.ATTRIBUTION =
+                    "maplibregl-ctrl-attrib";
             }
             callback();
         };
         script.onerror = () => {
             console.error("Failed to load MapboxDraw library");
+            callback(); // Still call callback to prevent hanging
         };
         document.body.appendChild(script);
     }
-
 
     // Load UMD JS if not already loaded
     function initMap() {
@@ -89,7 +94,10 @@ function render({ model, el }) {
 
         // Initialize draw features in model
         model.set("draw_features_selected", []);
-        model.set("draw_feature_collection_all", { type: "FeatureCollection", features: [] });
+        model.set("draw_feature_collection_all", {
+            type: "FeatureCollection",
+            features: [],
+        });
         model.set("draw_features_created", []);
         model.set("draw_features_updated", []);
         model.set("draw_features_deleted", []);
@@ -144,7 +152,7 @@ function render({ model, el }) {
             console.log("Map loaded");
             model.set("loaded", true);
             model.save_changes();
-            map.getCanvas().style.cursor = 'pointer';
+            map.getCanvas().style.cursor = "pointer";
         });
 
         // Support JS calls from Python
@@ -156,9 +164,7 @@ function render({ model, el }) {
 
             newCalls.forEach(({ method, args }, index) => {
                 const callIndex = processedCallsCount + index;
-                console.log(
-                    `Calling map.${method} with args:`, args
-                );
+                console.log(`Calling map.${method} with args:`, args);
                 if (method === "addControl") {
                     // Handle addControl specially
                     const [controlType, position, options] = args;
@@ -170,7 +176,13 @@ function render({ model, el }) {
                 } else if (method === "addDrawControl") {
                     // Handle addDrawControl specially
                     const [options, controls, position, geojson] = args;
-                    addDrawControlToMap(map, options, controls, position, geojson);
+                    addDrawControlToMap(
+                        map,
+                        options,
+                        controls,
+                        position,
+                        geojson
+                    );
                 } else if (method === "removeDrawControl") {
                     // Handle removeDrawControl specially
                     removeDrawControlFromMap(map);
@@ -193,7 +205,12 @@ function render({ model, el }) {
         });
 
         // Function to add controls to the map
-        function addControlToMap(map, controlType, position = "top-right", options = {}) {
+        function addControlToMap(
+            map,
+            controlType,
+            position = "top-right",
+            options = {}
+        ) {
             let control;
 
             // Normalize control type
@@ -251,56 +268,200 @@ function render({ model, el }) {
         }
 
         // Function to add draw control to the map
-        function addDrawControlToMap(map, options = {}, controls = {}, position = "top-right", geojson = null) {
+        function addDrawControlToMap(
+            map,
+            options = {},
+            controls = {},
+            position = "top-right",
+            geojson = null
+        ) {
             // Check if MapboxDraw is available
             if (typeof MapboxDraw === "undefined") {
-                console.warn("MapboxDraw is not loaded. Loading now...");
-                loadMapboxDraw(() => addDrawControlToMap(map, options, controls, position, geojson));
+                console.log("MapboxDraw is not loaded. Loading now...");
+                loadMapboxDraw(() =>
+                    addDrawControlToMap(
+                        map,
+                        options,
+                        controls,
+                        position,
+                        geojson
+                    )
+                );
                 return;
             }
 
-            // Patch MapboxDraw constants to work with MapLibre GL
-            if (MapboxDraw.constants && MapboxDraw.constants.classes) {
-                MapboxDraw.constants.classes.CANVAS = 'maplibregl-canvas';
-                MapboxDraw.constants.classes.CONTROL_BASE = 'maplibregl-ctrl';
-                MapboxDraw.constants.classes.CONTROL_PREFIX = 'maplibregl-ctrl-';
-                MapboxDraw.constants.classes.CONTROL_GROUP = 'maplibregl-ctrl-group';
-                MapboxDraw.constants.classes.ATTRIBUTION = 'maplibregl-ctrl-attrib';
-            }
-
-            // Default controls configuration
-            const defaultControls = {
-                polygon: true,
-                line_string: true,
-                point: true,
-                trash: true,
-                combine_features: false,
-                uncombine_features: false
-            };
-
-            // Merge provided controls with defaults
-            const drawControls = { ...defaultControls, ...controls };
-
-            // Default options
-            const defaultOptions = {
-                displayControlsDefault: false,
-                controls: {
-                    polygon: drawControls.polygon,
-                    line_string: drawControls.line_string,
-                    point: drawControls.point,
-                    trash: drawControls.trash,
-                    combine_features: drawControls.combine_features,
-                    uncombine_features: drawControls.uncombine_features
-                }
-            };
-
-            // Merge provided options with defaults
-            const drawOptions = { ...defaultOptions, ...options };
-
-            // Create draw control
-            const draw = new MapboxDraw(drawOptions);
-
             try {
+                // Patch MapboxDraw constants to work with MapLibre GL
+                if (MapboxDraw.constants && MapboxDraw.constants.classes) {
+                    MapboxDraw.constants.classes.CANVAS = "maplibregl-canvas";
+                    MapboxDraw.constants.classes.CONTROL_BASE =
+                        "maplibregl-ctrl";
+                    MapboxDraw.constants.classes.CONTROL_PREFIX =
+                        "maplibregl-ctrl-";
+                    MapboxDraw.constants.classes.CONTROL_GROUP =
+                        "maplibregl-ctrl-group";
+                    MapboxDraw.constants.classes.ATTRIBUTION =
+                        "maplibregl-ctrl-attrib";
+                }
+
+                // Default controls configuration
+                const defaultControls = {
+                    polygon: true,
+                    line_string: true,
+                    point: true,
+                    trash: true,
+                    combine_features: false,
+                    uncombine_features: false,
+                };
+
+                // Merge provided controls with defaults
+                const drawControls = { ...defaultControls, ...controls };
+
+                // Default options with custom styles to fix validation issues
+                const defaultOptions = {
+                    displayControlsDefault: false,
+                    controls: {
+                        polygon: drawControls.polygon,
+                        line_string: drawControls.line_string,
+                        point: drawControls.point,
+                        trash: drawControls.trash,
+                        combine_features: drawControls.combine_features,
+                        uncombine_features: drawControls.uncombine_features,
+                    },
+                    // Override styles to fix line-dasharray issues for MapLibre GL JS compatibility
+                    styles: [
+                        // Point styles
+                        {
+                            id: "gl-draw-point",
+                            type: "circle",
+                            filter: [
+                                "all",
+                                ["==", "$type", "Point"],
+                                ["!=", "mode", "static"],
+                            ],
+                            paint: {
+                                "circle-radius": 5,
+                                "circle-color": "#3bb2d0",
+                            },
+                        },
+                        // Line styles with fixed dasharray
+                        {
+                            id: "gl-draw-line",
+                            type: "line",
+                            filter: [
+                                "all",
+                                ["==", "$type", "LineString"],
+                                ["!=", "mode", "static"],
+                            ],
+                            layout: {
+                                "line-cap": "round",
+                                "line-join": "round",
+                            },
+                            paint: {
+                                "line-color": "#3bb2d0",
+                                // "line-dasharray": ["literal", [0.2, 2]],
+                                "line-width": 2,
+                            },
+                        },
+                        // Polygon fill
+                        {
+                            id: "gl-draw-polygon-fill",
+                            type: "fill",
+                            filter: [
+                                "all",
+                                ["==", "$type", "Polygon"],
+                                ["!=", "mode", "static"],
+                            ],
+                            paint: {
+                                "fill-color": "#3bb2d0",
+                                "fill-outline-color": "#3bb2d0",
+                                "fill-opacity": 0.1,
+                            },
+                        },
+                        // Polygon stroke
+                        {
+                            id: "gl-draw-polygon-stroke-active",
+                            type: "line",
+                            filter: [
+                                "all",
+                                ["==", "$type", "Polygon"],
+                                ["!=", "mode", "static"],
+                            ],
+                            layout: {
+                                "line-cap": "round",
+                                "line-join": "round",
+                            },
+                            paint: {
+                                "line-color": "#3bb2d0",
+                                // "line-dasharray": ["literal", [0.2, 2]],
+                                "line-width": 2,
+                            },
+                        },
+                        // Active vertex (orange)
+                        {
+                            id: "gl-draw-polygon-and-line-vertex-active",
+                            type: "circle",
+                            filter: [
+                                "all",
+                                ["==", "meta", "vertex"],
+                                ["==", "active", "true"],
+                            ],
+                            paint: {
+                                "circle-radius": 6,
+                                "circle-color": "#fbb03b",
+                            },
+                        },
+                        // Inactive vertex (blue)
+                        {
+                            id: "gl-draw-polygon-and-line-vertex-inactive",
+                            type: "circle",
+                            filter: [
+                                "all",
+                                ["==", "meta", "vertex"],
+                                ["==", "active", "false"],
+                            ],
+                            paint: {
+                                "circle-radius": 5,
+                                "circle-color": "#3bb2d0",
+                            },
+                        },
+                        // Selected point feature (orange)
+                        {
+                            id: "gl-draw-point-active",
+                            type: "circle",
+                            filter: [
+                                "all",
+                                ["==", "$type", "Point"],
+                                ["==", "active", "true"],
+                            ],
+                            paint: {
+                                "circle-radius": 6,
+                                "circle-color": "#fbb03b",
+                            },
+                        },
+                        // Unselected point feature (blue)
+                        {
+                            id: "gl-draw-point-inactive",
+                            type: "circle",
+                            filter: [
+                                "all",
+                                ["==", "$type", "Point"],
+                                ["==", "active", "false"],
+                            ],
+                            paint: {
+                                "circle-radius": 5,
+                                "circle-color": "#3bb2d0",
+                            },
+                        },
+                    ],
+                };
+
+                // Merge provided options with defaults
+                const drawOptions = { ...defaultOptions, ...options };
+
+                // Create draw control
+                const draw = new MapboxDraw(drawOptions);
+
                 // For better control positioning, don't specify position if it's default
                 if (position === "top-right") {
                     map.addControl(draw);
@@ -313,7 +474,7 @@ function render({ model, el }) {
                 // Add initial geojson if provided
                 if (geojson) {
                     if (geojson.type === "FeatureCollection") {
-                        geojson.features.forEach(feature => {
+                        geojson.features.forEach((feature) => {
                             draw.add(feature);
                         });
                     } else if (geojson.type === "Feature") {
@@ -324,37 +485,36 @@ function render({ model, el }) {
 
                 // Set up draw event handlers
                 setupDrawEventHandlers(map, draw);
-
             } catch (err) {
-                console.warn("Failed to add draw control:", err);
+                console.error("Failed to add draw control:", err);
             }
         }
 
         // Function to set up draw event handlers
         function setupDrawEventHandlers(map, draw) {
-            map.on('draw.create', function (e) {
-                console.log('Features created:', e.features);
+            map.on("draw.create", function (e) {
+                console.log("Features created:", e.features);
                 model.set("draw_features_created", e.features);
                 updateDrawFeatures(map, draw);
                 model.save_changes();
             });
 
-            map.on('draw.update', function (e) {
-                console.log('Features updated:', e.features);
+            map.on("draw.update", function (e) {
+                console.log("Features updated:", e.features);
                 model.set("draw_features_updated", e.features);
                 updateDrawFeatures(map, draw);
                 model.save_changes();
             });
 
-            map.on('draw.delete', function (e) {
-                console.log('Features deleted:', e.features);
+            map.on("draw.delete", function (e) {
+                console.log("Features deleted:", e.features);
                 model.set("draw_features_deleted", e.features);
                 updateDrawFeatures(map, draw);
                 model.save_changes();
             });
 
-            map.on('draw.selectionchange', function (e) {
-                console.log('Selection changed:', e.features);
+            map.on("draw.selectionchange", function (e) {
+                console.log("Selection changed:", e.features);
                 model.set("draw_features_selected", e.features);
                 model.save_changes();
             });
@@ -376,7 +536,10 @@ function render({ model, el }) {
 
                 // Clear draw features from model
                 model.set("draw_features_selected", []);
-                model.set("draw_feature_collection_all", { type: "FeatureCollection", features: [] });
+                model.set("draw_feature_collection_all", {
+                    type: "FeatureCollection",
+                    features: [],
+                });
                 model.set("draw_features_created", []);
                 model.set("draw_features_updated", []);
                 model.set("draw_features_deleted", []);
@@ -392,7 +555,7 @@ function render({ model, el }) {
             if (draw) {
                 const allFeatures = draw.getAll();
                 if (allFeatures.features.length > 0) {
-                    const featureIds = allFeatures.features.map(f => f.id);
+                    const featureIds = allFeatures.features.map((f) => f.id);
                     draw.delete(featureIds);
                     console.log("Deleted all draw features");
 
@@ -406,30 +569,16 @@ function render({ model, el }) {
             }
         }
 
-
         // Resize after layout stabilizes
         setTimeout(() => map.resize(), 100);
-    }
-
-    // Preload MapboxDraw before map initialization
-    function preloadMapboxDraw() {
-        if (typeof MapboxDraw === "undefined") {
-            loadMapboxDraw(() => {
-                console.log("MapboxDraw preloaded and ready");
-            });
-        }
     }
 
     if (typeof maplibregl === "undefined") {
         const script = document.createElement("script");
         script.src = "https://unpkg.com/maplibre-gl@5.5.0/dist/maplibre-gl.js";
-        script.onload = () => {
-            preloadMapboxDraw();
-            initMap();
-        };
+        script.onload = initMap;
         document.body.appendChild(script);
     } else {
-        preloadMapboxDraw();
         initMap();
     }
 }
