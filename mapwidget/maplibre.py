@@ -104,6 +104,20 @@ class Map(anywidget.AnyWidget):
                 self.add_call("addLegendControl", [targets, options, position])
             del self._pending_legend
 
+        if hasattr(self, "_pending_opacity"):
+            for (
+                baseLayers,
+                overLayers,
+                options,
+                position,
+                defaultVisibility,
+            ) in self._pending_opacity:
+                self.add_call(
+                    "addOpacityControl",
+                    [baseLayers, overLayers, options, position, defaultVisibility],
+                )
+            del self._pending_opacity
+
     @property
     def layers(self):
         """Get the current style of the map."""
@@ -355,3 +369,91 @@ class Map(anywidget.AnyWidget):
             if not hasattr(self, "_pending_draw_mode"):
                 self._pending_draw_mode = []
             self._pending_draw_mode.append(mode)
+
+    def add_opacity_control(
+        self,
+        base_layers: Optional[Dict[str, str]] = None,
+        over_layers: Optional[Dict[str, str]] = None,
+        options: Optional[Dict[str, Any]] = None,
+        position: str = "top-right",
+        default_visibility: Optional[Dict[str, bool]] = None,
+        collapsible: bool = False,
+    ) -> None:
+        """
+        Adds an opacity control to the map using maplibre-gl-opacity plugin.
+
+        This control allows users to adjust the opacity of multiple tile layers
+        and switch between base layers and overlays.
+
+        Args:
+            base_layers (Optional[Dict[str, str]]): A dictionary mapping base layer IDs
+                to display names. Only one base layer can be visible at a time.
+            over_layers (Optional[Dict[str, str]]): A dictionary mapping overlay layer IDs
+                to display names. Multiple overlays can be visible simultaneously.
+            options (Optional[Dict[str, Any]]): Configuration options for the opacity control.
+                Available options:
+                - opacityControl (bool): Whether to show opacity sliders. Defaults to True.
+            position (str): The position of the control on the map. Defaults to "top-right".
+            default_visibility (Optional[Dict[str, bool]]): A dictionary mapping layer IDs
+                to their default visibility state. If not specified, overlay layers will
+                be visible by default and base layers will follow the first-wins rule.
+            collapsible (bool): Whether to add a toggle button to show/hide the control.
+                Defaults to False.
+
+        Returns:
+            None
+
+        Example:
+            ```python
+            # Define base layers (mutually exclusive)
+            base_layers = {
+                "osm": "OpenStreetMap",
+                "satellite": "Satellite"
+            }
+
+            # Define overlay layers (can be combined)
+            over_layers = {
+                "roads": "Roads",
+                "labels": "Labels"
+            }
+
+            # Control which layers are visible by default
+            default_visibility = {
+                "osm": True,        # Base layer visible
+                "roads": True,      # Overlay visible
+                "labels": False     # Overlay hidden
+            }
+
+            m.add_opacity_control(
+                base_layers=base_layers,
+                over_layers=over_layers,
+                default_visibility=default_visibility,
+                collapsible=True,  # Add toggle button
+                position="top-left"
+            )
+            ```
+        """
+        if base_layers is None:
+            base_layers = {}
+        if over_layers is None:
+            over_layers = {}
+        if options is None:
+            options = {"opacityControl": True}
+        if default_visibility is None:
+            default_visibility = {}
+
+        # Add collapsible option to the options dict
+        if collapsible:
+            options["collapsible"] = True
+
+        if self.loaded:
+            self.add_call(
+                "addOpacityControl",
+                [base_layers, over_layers, options, position, default_visibility],
+            )
+        else:
+            if not hasattr(self, "_pending_opacity"):
+                self._pending_opacity = []
+            self._pending_opacity.append(
+                (base_layers, over_layers, options, position, default_visibility)
+            )
