@@ -45,8 +45,8 @@
     # ------------------------------
     # 4. Copy source code after env setup
     # ------------------------------
+    USER $NB_UID
     COPY . /home/jovyan/mapwidget
-    RUN chown -R ${NB_UID}:${NB_GID} /home/jovyan/mapwidget
     WORKDIR /home/jovyan/mapwidget
 
     # ------------------------------
