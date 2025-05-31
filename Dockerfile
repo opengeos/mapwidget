@@ -45,8 +45,9 @@
     # ------------------------------
     # 4. Copy source code after env setup
     # ------------------------------
-    USER $NB_UID
+    USER root
     COPY . /home/jovyan/mapwidget
+    RUN chown -R $NB_UID:$NB_GID /home/jovyan/mapwidget
     WORKDIR /home/jovyan/mapwidget
 
     # ------------------------------
@@ -54,6 +55,8 @@
     # ------------------------------
     # Prevent version resolution errors in CI
     ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_MAPWIDGET=0.0.0
+
+    USER $NB_UID
 
     RUN pip install . && \
         rm -rf ./build ./dist *.egg-info && \
@@ -63,7 +66,7 @@
     # ------------------------------
     # 6. Switch back to default user
     # ------------------------------
-    USER $NB_UID
+
     WORKDIR /home/jovyan
 
     # ------------------------------
