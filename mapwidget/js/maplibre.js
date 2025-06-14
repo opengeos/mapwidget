@@ -121,6 +121,26 @@ function render({ model, el }) {
         document.body.appendChild(script);
     }
 
+    // Function to load MapLibre COG Protocol if not available
+    function loadMaplibreCOG(callback) {
+        if (typeof MaplibreCOGProtocol !== "undefined") {
+            callback();
+            return;
+        }
+
+        const script = document.createElement("script");
+        script.src =
+            "https://unpkg.com/@geomatico/maplibre-cog-protocol@0.4.0/dist/index.js";
+        script.onload = () => {
+            callback();
+        };
+        script.onerror = () => {
+            console.error("Failed to load MapLibre COG Protocol library");
+            callback(); // Still call callback to prevent hanging
+        };
+        document.body.appendChild(script);
+    }
+
     // Custom repeat modes for continuous drawing
     function createRepeatModes() {
         const RepeatPointMode = {};
@@ -417,6 +437,10 @@ function render({ model, el }) {
                     // Handle addOpacityControl specially
                     const [baseLayers, overLayers, options, position, defaultVisibility] = args;
                     addOpacityControlToMap(map, baseLayers, overLayers, options, position, defaultVisibility);
+                } else if (method === "addCogLayer") {
+                    // Handle addCogLayer specially
+                    const [url, sourceId, layerId, sourceOptions, layerOptions] = args;
+                    addCogLayer(map, url, sourceId, layerId, sourceOptions, layerOptions);
                 } else if (typeof map[method] === "function") {
                     try {
                         map[method](...(args || []));
@@ -1068,6 +1092,53 @@ function render({ model, el }) {
             map.addControl(toggleControl, position);
             controlRegistry.set("opacity-toggle", toggleControl);
             console.log('Toggle control added at position:', position);
+        }
+
+        // Function to add COG layer to the map
+        function addCogLayer(map, url, sourceId, layerId, sourceOptions = {}, layerOptions = {}) {
+            // Ensure COG protocol is loaded and registered
+            loadMaplibreCOG(() => {
+                if (typeof MaplibreCOGProtocol !== "undefined" && typeof maplibregl.addProtocol === "function") {
+                    // Register COG protocol if not already registered
+                    try {
+                        maplibregl.addProtocol('cog', MaplibreCOGProtocol.cogProtocol);
+                    } catch (err) {
+                        // Protocol might already be registered, which is fine
+                        console.log("COG protocol already registered or registration failed:", err);
+                    }
+
+                    try {
+                        // Create COG source
+                        const cogSource = {
+                            type: 'raster',
+                            url: `cog://${url}`,
+                            tileSize: 256,
+                            ...sourceOptions
+                        };
+
+                        // Add the COG source to the map
+                        map.addSource(sourceId, cogSource);
+                        console.log(`Added COG source: ${sourceId}`);
+
+                        // Create COG layer
+                        const cogLayer = {
+                            id: layerId,
+                            source: sourceId,
+                            type: 'raster',
+                            ...layerOptions
+                        };
+
+                        // Add the COG layer to the map
+                        map.addLayer(cogLayer);
+                        console.log(`Added COG layer: ${layerId}`);
+
+                    } catch (err) {
+                        console.error("Failed to add COG layer:", err);
+                    }
+                } else {
+                    console.error("MapLibre COG Protocol not available");
+                }
+            });
         }
 
         // Resize after layout stabilizes
