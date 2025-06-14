@@ -804,6 +804,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#mapwidget.maplibre.Map.add_cog_layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      add_cog_layer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#mapwidget.maplibre.Map.add_control" class="md-nav__link">
     <span class="md-ellipsis">
       add_control
@@ -1148,6 +1157,15 @@
   <a href="#mapwidget.maplibre.Map.add_call" class="md-nav__link">
     <span class="md-ellipsis">
       add_call
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapwidget.maplibre.Map.add_cog_layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      add_cog_layer
     </span>
   </a>
   
@@ -1908,7 +1926,77 @@
 <span class="normal">456</span>
 <span class="normal">457</span>
 <span class="normal">458</span>
-<span class="normal">459</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Map</span><span class="p">(</span><span class="n">anywidget</span><span class="o">.</span><span class="n">AnyWidget</span><span class="p">):</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span>
+<span class="normal">523</span>
+<span class="normal">524</span>
+<span class="normal">525</span>
+<span class="normal">526</span>
+<span class="normal">527</span>
+<span class="normal">528</span>
+<span class="normal">529</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Map</span><span class="p">(</span><span class="n">anywidget</span><span class="o">.</span><span class="n">AnyWidget</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a MapLibre map widget.&quot;&quot;&quot;</span>
 
     <span class="n">_cwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
@@ -2359,6 +2447,76 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_pending_opacity</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="p">(</span><span class="n">base_layers</span><span class="p">,</span> <span class="n">over_layers</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">default_visibility</span><span class="p">)</span>
             <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_cog_layer</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">source_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">layer_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">source_options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">layer_options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a Cloud Optimized GeoTIFF (COG) layer to the map.</span>
+
+<span class="sd">        This method uses the maplibre-cog-protocol to add COG raster data as a layer</span>
+<span class="sd">        on the map. The COG protocol allows for efficient streaming of large raster</span>
+<span class="sd">        datasets directly from cloud storage.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url (str): The URL of the COG file to load.</span>
+<span class="sd">            source_id (Optional[str]): The ID for the COG source. If not provided,</span>
+<span class="sd">                a unique ID will be generated based on the URL.</span>
+<span class="sd">            layer_id (Optional[str]): The ID for the COG layer. If not provided,</span>
+<span class="sd">                a unique ID will be generated based on the source ID.</span>
+<span class="sd">            source_options (Optional[Dict[str, Any]]): Additional options for the</span>
+<span class="sd">                COG source. Common options include:</span>
+<span class="sd">                - tileSize (int): Tile size in pixels. Defaults to 256.</span>
+<span class="sd">                - maxzoom (int): Maximum zoom level for the source.</span>
+<span class="sd">                - minzoom (int): Minimum zoom level for the source.</span>
+<span class="sd">            layer_options (Optional[Dict[str, Any]]): Additional options for the</span>
+<span class="sd">                COG layer. Common options include:</span>
+<span class="sd">                - paint (Dict): Paint properties for the layer (e.g., opacity).</span>
+<span class="sd">                - layout (Dict): Layout properties for the layer.</span>
+<span class="sd">                - beforeId (str): ID of the layer before which to insert this layer.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            ```python</span>
+<span class="sd">            # Add a simple COG layer</span>
+<span class="sd">            m.add_cog_layer(&quot;https://example.com/data.tif&quot;)</span>
+
+<span class="sd">            # Add a COG layer with custom IDs and options</span>
+<span class="sd">            m.add_cog_layer(</span>
+<span class="sd">                url=&quot;https://example.com/elevation.tif&quot;,</span>
+<span class="sd">                source_id=&quot;elevation-source&quot;,</span>
+<span class="sd">                layer_id=&quot;elevation-layer&quot;,</span>
+<span class="sd">                source_options={&quot;tileSize&quot;: 512, &quot;maxzoom&quot;: 14},</span>
+<span class="sd">                layer_options={&quot;paint&quot;: {&quot;raster-opacity&quot;: 0.8}}</span>
+<span class="sd">            )</span>
+<span class="sd">            ```</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            The COG file must be accessible via HTTP/HTTPS and should be properly</span>
+<span class="sd">            formatted as a Cloud Optimized GeoTIFF with internal tiling and overviews.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">source_options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">source_options</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">layer_options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">layer_options</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Generate unique IDs if not provided</span>
+        <span class="k">if</span> <span class="n">source_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">source_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;cog-source-</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="n">layer_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">layer_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;cog-layer-</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="c1"># Add the COG layer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_call</span><span class="p">(</span>
+            <span class="s2">&quot;addCogLayer&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">url</span><span class="p">,</span> <span class="n">source_id</span><span class="p">,</span> <span class="n">layer_id</span><span class="p">,</span> <span class="n">source_options</span><span class="p">,</span> <span class="n">layer_options</span><span class="p">]</span>
+        <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -2615,6 +2773,328 @@
     <span class="k">if</span> <span class="n">kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">calls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calls</span> <span class="o">+</span> <span class="p">[{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="n">method</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="n">args</span><span class="p">,</span> <span class="s2">&quot;kwargs&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">}]</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="mapwidget.maplibre.Map.add_cog_layer" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">add_cog_layer</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">source_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">layer_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">source_options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">layer_options</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#mapwidget.maplibre.Map.add_cog_layer" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Adds a Cloud Optimized GeoTIFF (COG) layer to the map.</p>
+<p>This method uses the maplibre-cog-protocol to add COG raster data as a layer
+on the map. The COG protocol allows for efficient streaming of large raster
+datasets directly from cloud storage.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>url</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The URL of the COG file to load.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>source_id</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The ID for the COG source. If not provided,
+a unique ID will be generated based on the URL.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>layer_id</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The ID for the COG layer. If not provided,
+a unique ID will be generated based on the source ID.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>source_options</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Additional options for the
+COG source. Common options include:
+- tileSize (int): Tile size in pixels. Defaults to 256.
+- maxzoom (int): Maximum zoom level for the source.
+- minzoom (int): Minimum zoom level for the source.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>layer_options</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Additional options for the
+COG layer. Common options include:
+- paint (Dict): Paint properties for the layer (e.g., opacity).
+- layout (Dict): Layout properties for the layer.
+- beforeId (str): ID of the layer before which to insert this layer.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>None</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Add a simple COG layer</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_cog_layer</span><span class="p">(</span><span class="s2">&quot;https://example.com/data.tif&quot;</span><span class="p">)</span>
+
+<span class="c1"># Add a COG layer with custom IDs and options</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_cog_layer</span><span class="p">(</span>
+    <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://example.com/elevation.tif&quot;</span><span class="p">,</span>
+    <span class="n">source_id</span><span class="o">=</span><span class="s2">&quot;elevation-source&quot;</span><span class="p">,</span>
+    <span class="n">layer_id</span><span class="o">=</span><span class="s2">&quot;elevation-layer&quot;</span><span class="p">,</span>
+    <span class="n">source_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;tileSize&quot;</span><span class="p">:</span> <span class="mi">512</span><span class="p">,</span> <span class="s2">&quot;maxzoom&quot;</span><span class="p">:</span> <span class="mi">14</span><span class="p">},</span>
+    <span class="n">layer_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;paint&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;raster-opacity&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">}}</span>
+<span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+</details>
+
+<details class="note" open>
+  <summary>Note</summary>
+  <p>The COG file must be accessible via HTTP/HTTPS and should be properly
+formatted as a Cloud Optimized GeoTIFF with internal tiling and overviews.</p>
+</details>
+
+            <details class="quote">
+              <summary>Source code in <code>mapwidget/maplibre.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span>
+<span class="normal">523</span>
+<span class="normal">524</span>
+<span class="normal">525</span>
+<span class="normal">526</span>
+<span class="normal">527</span>
+<span class="normal">528</span>
+<span class="normal">529</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_cog_layer</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">source_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">layer_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">source_options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">layer_options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adds a Cloud Optimized GeoTIFF (COG) layer to the map.</span>
+
+<span class="sd">    This method uses the maplibre-cog-protocol to add COG raster data as a layer</span>
+<span class="sd">    on the map. The COG protocol allows for efficient streaming of large raster</span>
+<span class="sd">    datasets directly from cloud storage.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        url (str): The URL of the COG file to load.</span>
+<span class="sd">        source_id (Optional[str]): The ID for the COG source. If not provided,</span>
+<span class="sd">            a unique ID will be generated based on the URL.</span>
+<span class="sd">        layer_id (Optional[str]): The ID for the COG layer. If not provided,</span>
+<span class="sd">            a unique ID will be generated based on the source ID.</span>
+<span class="sd">        source_options (Optional[Dict[str, Any]]): Additional options for the</span>
+<span class="sd">            COG source. Common options include:</span>
+<span class="sd">            - tileSize (int): Tile size in pixels. Defaults to 256.</span>
+<span class="sd">            - maxzoom (int): Maximum zoom level for the source.</span>
+<span class="sd">            - minzoom (int): Minimum zoom level for the source.</span>
+<span class="sd">        layer_options (Optional[Dict[str, Any]]): Additional options for the</span>
+<span class="sd">            COG layer. Common options include:</span>
+<span class="sd">            - paint (Dict): Paint properties for the layer (e.g., opacity).</span>
+<span class="sd">            - layout (Dict): Layout properties for the layer.</span>
+<span class="sd">            - beforeId (str): ID of the layer before which to insert this layer.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        ```python</span>
+<span class="sd">        # Add a simple COG layer</span>
+<span class="sd">        m.add_cog_layer(&quot;https://example.com/data.tif&quot;)</span>
+
+<span class="sd">        # Add a COG layer with custom IDs and options</span>
+<span class="sd">        m.add_cog_layer(</span>
+<span class="sd">            url=&quot;https://example.com/elevation.tif&quot;,</span>
+<span class="sd">            source_id=&quot;elevation-source&quot;,</span>
+<span class="sd">            layer_id=&quot;elevation-layer&quot;,</span>
+<span class="sd">            source_options={&quot;tileSize&quot;: 512, &quot;maxzoom&quot;: 14},</span>
+<span class="sd">            layer_options={&quot;paint&quot;: {&quot;raster-opacity&quot;: 0.8}}</span>
+<span class="sd">        )</span>
+<span class="sd">        ```</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The COG file must be accessible via HTTP/HTTPS and should be properly</span>
+<span class="sd">        formatted as a Cloud Optimized GeoTIFF with internal tiling and overviews.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">source_options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">source_options</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">layer_options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">layer_options</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Generate unique IDs if not provided</span>
+    <span class="k">if</span> <span class="n">source_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">source_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;cog-source-</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">if</span> <span class="n">layer_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">layer_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;cog-layer-</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="c1"># Add the COG layer</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">add_call</span><span class="p">(</span>
+        <span class="s2">&quot;addCogLayer&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">url</span><span class="p">,</span> <span class="n">source_id</span><span class="p">,</span> <span class="n">layer_id</span><span class="p">,</span> <span class="n">source_options</span><span class="p">,</span> <span class="n">layer_options</span><span class="p">]</span>
+    <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
