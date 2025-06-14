@@ -457,3 +457,73 @@ class Map(anywidget.AnyWidget):
             self._pending_opacity.append(
                 (base_layers, over_layers, options, position, default_visibility)
             )
+
+    def add_cog_layer(
+        self,
+        url: str,
+        source_id: Optional[str] = None,
+        layer_id: Optional[str] = None,
+        source_options: Optional[Dict[str, Any]] = None,
+        layer_options: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        """
+        Adds a Cloud Optimized GeoTIFF (COG) layer to the map.
+
+        This method uses the maplibre-cog-protocol to add COG raster data as a layer
+        on the map. The COG protocol allows for efficient streaming of large raster
+        datasets directly from cloud storage.
+
+        Args:
+            url (str): The URL of the COG file to load.
+            source_id (Optional[str]): The ID for the COG source. If not provided,
+                a unique ID will be generated based on the URL.
+            layer_id (Optional[str]): The ID for the COG layer. If not provided,
+                a unique ID will be generated based on the source ID.
+            source_options (Optional[Dict[str, Any]]): Additional options for the
+                COG source. Common options include:
+                - tileSize (int): Tile size in pixels. Defaults to 256.
+                - maxzoom (int): Maximum zoom level for the source.
+                - minzoom (int): Minimum zoom level for the source.
+            layer_options (Optional[Dict[str, Any]]): Additional options for the
+                COG layer. Common options include:
+                - paint (Dict): Paint properties for the layer (e.g., opacity).
+                - layout (Dict): Layout properties for the layer.
+                - beforeId (str): ID of the layer before which to insert this layer.
+
+        Returns:
+            None
+
+        Example:
+            ```python
+            # Add a simple COG layer
+            m.add_cog_layer("https://example.com/data.tif")
+
+            # Add a COG layer with custom IDs and options
+            m.add_cog_layer(
+                url="https://example.com/elevation.tif",
+                source_id="elevation-source",
+                layer_id="elevation-layer",
+                source_options={"tileSize": 512, "maxzoom": 14},
+                layer_options={"paint": {"raster-opacity": 0.8}}
+            )
+            ```
+
+        Note:
+            The COG file must be accessible via HTTP/HTTPS and should be properly
+            formatted as a Cloud Optimized GeoTIFF with internal tiling and overviews.
+        """
+        if source_options is None:
+            source_options = {}
+        if layer_options is None:
+            layer_options = {}
+
+        # Generate unique IDs if not provided
+        if source_id is None:
+            source_id = f"cog-source-{uuid.uuid4().hex[:8]}"
+        if layer_id is None:
+            layer_id = f"cog-layer-{uuid.uuid4().hex[:8]}"
+
+        # Add the COG layer
+        self.add_call(
+            "addCogLayer", [url, source_id, layer_id, source_options, layer_options]
+        )
