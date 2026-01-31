@@ -1,9 +1,10 @@
 import os
+import json
 import uuid
 import pathlib
 import anywidget
 import traitlets
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List, Union
 
 
 class Map(anywidget.AnyWidget):
@@ -526,4 +527,327 @@ class Map(anywidget.AnyWidget):
         # Add the COG layer
         self.add_call(
             "addCogLayer", [url, source_id, layer_id, source_options, layer_options]
+        )
+
+    def add_geojson(
+        self,
+        data: Union[str, Dict[str, Any]],
+        source_id: Optional[str] = None,
+        layer_id: Optional[str] = None,
+        layer_type: Optional[str] = None,
+        paint: Optional[Dict[str, Any]] = None,
+        layout: Optional[Dict[str, Any]] = None,
+        source_options: Optional[Dict[str, Any]] = None,
+        fit_bounds: bool = True,
+        before_id: Optional[str] = None,
+    ) -> str:
+        """Add GeoJSON data to the map as a source and layer.
+
+        This method supports multiple input formats:
+        - A GeoJSON dictionary (FeatureCollection, Feature, or Geometry)
+        - A file path to a .geojson or .json file
+        - A URL pointing to a GeoJSON resource
+        - A GeoDataFrame (requires geopandas)
+
+        The method automatically detects geometry types and creates appropriate
+        map layers (fill for Polygon, line for LineString, circle for Point).
+        For mixed-geometry FeatureCollections, multiple layers are created.
+
+        Args:
+            data: GeoJSON data as a dict, file path, URL string, or GeoDataFrame.
+            source_id: ID for the GeoJSON source. Auto-generated if not provided.
+            layer_id: Base ID for the layer(s). Auto-generated if not provided.
+                For mixed-geometry data, suffixes like '-fill', '-line', '-circle'
+                are appended.
+            layer_type: Explicit layer type override ('fill', 'line', 'circle',
+                'fill-extrusion', 'heatmap', 'symbol'). If not provided, the type
+                is inferred from the geometry.
+            paint: Paint properties for the layer. If not provided, sensible
+                defaults are used based on the layer type.
+            layout: Layout properties for the layer.
+            source_options: Additional options for the GeoJSON source (e.g.,
+                'cluster', 'clusterMaxZoom', 'clusterRadius', 'tolerance').
+            fit_bounds: Whether to automatically fit the map to the data bounds.
+                Defaults to True.
+            before_id: ID of an existing layer to insert the new layer(s) before.
+
+        Returns:
+            str: The source ID used for the added data.
+
+        Example:
+            ```python
+            # Add GeoJSON from a dictionary
+            geojson = {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "geometry": {"type": "Point", "coordinates": [-77.03, 38.90]},
+                        "properties": {"name": "Washington DC"}
+                    }
+                ]
+            }
+            m.add_geojson(geojson)
+
+            # Add GeoJSON from a URL
+            m.add_geojson(
+                "https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_admin_0_countries.geojson",
+                paint={"fill-color": "#088", "fill-opacity": 0.5}
+            )
+
+            # Add GeoJSON from a file
+            m.add_geojson("data/parcels.geojson")
+
+            # Add from a GeoDataFrame
+            import geopandas as gpd
+            gdf = gpd.read_file("data/roads.shp")
+            m.add_geojson(gdf, paint={"line-color": "red", "line-width": 2})
+
+            # Add with clustering enabled
+            m.add_geojson(
+                geojson,
+                source_options={"cluster": True, "clusterRadius": 50},
+            )
+            ```
+        """
+        # Resolve the data to a GeoJSON dict
+        geojson = self._resolve_geojson(data)
+
+        if source_options is None:
+            source_options = {}
+        if paint is None:
+            paint = {}
+        if layout is None:
+            layout = {}
+
+        # Generate unique IDs if not provided
+        if source_id is None:
+            source_id = f"geojson-{uuid.uuid4().hex[:8]}"
+        if layer_id is None:
+            layer_id = f"{source_id}-layer"
+
+        # Detect geometry types present in the data
+        geom_types = self._get_geometry_types(geojson)
+
+        # Compute bounds for fit_bounds
+        bounds = None
+        if fit_bounds:
+            bounds = self._compute_geojson_bounds(geojson)
+
+        # Delegate to JS side for source + layer creation
+        self.add_call(
+            "addGeoJSON",
+            [
+                geojson,
+                source_id,
+                layer_id,
+                layer_type,
+                paint,
+                layout,
+                source_options,
+                list(geom_types),
+                bounds,
+                before_id,
+            ],
+        )
+
+        return source_id
+
+    def _resolve_geojson(self, data) -> Dict[str, Any]:
+        """Resolve various input types to a GeoJSON dictionary.
+
+        Args:
+            data: GeoJSON dict, file path string, URL string, or GeoDataFrame.
+
+        Returns:
+            dict: A valid GeoJSON dictionary.
+
+        Raises:
+            TypeError: If the data type is not supported.
+            FileNotFoundError: If a file path doesn't exist.
+        """
+        # Handle GeoDataFrame
+        if hasattr(data, "__geo_interface__"):
+            geojson = data.__geo_interface__
+            if isinstance(geojson, str):
+                geojson = json.loads(geojson)
+            return geojson
+
+        # Handle dict (already GeoJSON)
+        if isinstance(data, dict):
+            return data
+
+        # Handle string: file path or URL
+        if isinstance(data, str):
+            # URL
+            if data.startswith(("http://", "https://")):
+                return data  # Pass URL directly to JS for loading
+
+            # File path
+            if os.path.isfile(data):
+                with open(data, "r") as f:
+                    return json.load(f)
+            else:
+                raise FileNotFoundError(f"File not found: {data}")
+
+        raise TypeError(
+            f"Unsupported data type: {type(data).__name__}. "
+            "Expected a GeoJSON dict, file path, URL, or GeoDataFrame."
+        )
+
+    @staticmethod
+    def _get_geometry_types(geojson) -> set:
+        """Extract unique geometry types from GeoJSON data.
+
+        Args:
+            geojson: A GeoJSON dictionary or URL string.
+
+        Returns:
+            set: A set of geometry type strings (e.g., {'Point', 'Polygon'}).
+        """
+        if isinstance(geojson, str):
+            # URL — can't inspect, return empty (JS will handle)
+            return set()
+
+        types = set()
+
+        if geojson.get("type") == "FeatureCollection":
+            for feature in geojson.get("features", []):
+                geom = feature.get("geometry", {})
+                if geom:
+                    types.add(geom.get("type", ""))
+        elif geojson.get("type") == "Feature":
+            geom = geojson.get("geometry", {})
+            if geom:
+                types.add(geom.get("type", ""))
+        elif geojson.get("type") in (
+            "Point",
+            "MultiPoint",
+            "LineString",
+            "MultiLineString",
+            "Polygon",
+            "MultiPolygon",
+            "GeometryCollection",
+        ):
+            types.add(geojson["type"])
+
+        return types
+
+    @staticmethod
+    def _compute_geojson_bounds(geojson) -> Optional[List[float]]:
+        """Compute bounding box [west, south, east, north] from GeoJSON.
+
+        Args:
+            geojson: A GeoJSON dictionary.
+
+        Returns:
+            list or None: [west, south, east, north] or None if bounds
+            cannot be computed (e.g., URL input or empty data).
+        """
+        if isinstance(geojson, str):
+            return None  # URL — JS will handle bounds
+
+        coords = []
+
+        def _extract_coords(obj):
+            """Recursively extract all coordinate pairs."""
+            if isinstance(obj, dict):
+                if "coordinates" in obj:
+                    _flatten_coords(obj["coordinates"])
+                if "geometry" in obj:
+                    _extract_coords(obj["geometry"])
+                if "features" in obj:
+                    for f in obj["features"]:
+                        _extract_coords(f)
+                if "geometries" in obj:
+                    for g in obj["geometries"]:
+                        _extract_coords(g)
+
+        def _flatten_coords(c):
+            """Flatten nested coordinate arrays to [lng, lat] pairs."""
+            if not c:
+                return
+            if isinstance(c[0], (int, float)):
+                coords.append(c[:2])  # [lng, lat]
+            else:
+                for item in c:
+                    _flatten_coords(item)
+
+        _extract_coords(geojson)
+
+        if not coords:
+            return None
+
+        lngs = [c[0] for c in coords]
+        lats = [c[1] for c in coords]
+
+        return [min(lngs), min(lats), max(lngs), max(lats)]
+
+    def add_stac_layer(
+        self,
+        url: str,
+        asset_key: str = "visual",
+        source_id: Optional[str] = None,
+        layer_id: Optional[str] = None,
+        source_options: Optional[Dict[str, Any]] = None,
+        layer_options: Optional[Dict[str, Any]] = None,
+        fit_bounds: bool = True,
+    ) -> None:
+        """Add a STAC (SpatioTemporal Asset Catalog) item's raster asset to the map.
+
+        This method loads a STAC item from a URL, extracts the specified asset's
+        COG href, and adds it as a raster layer using the COG protocol. Optionally
+        fits the map to the item's bounding box.
+
+        Args:
+            url: URL to a STAC Item JSON (e.g.,
+                'https://planetarycomputer.microsoft.com/api/stac/v1/collections/...')
+            asset_key: The asset key to load from the STAC item. Common values
+                include 'visual', 'B04', 'data', 'rendered_preview'.
+                Defaults to 'visual'.
+            source_id: ID for the raster source. Auto-generated if not provided.
+            layer_id: ID for the raster layer. Auto-generated if not provided.
+            source_options: Additional options for the raster source (e.g.,
+                tileSize, maxzoom, minzoom).
+            layer_options: Additional options for the raster layer (e.g.,
+                paint properties like raster-opacity).
+            fit_bounds: Whether to fit the map to the STAC item's bounding box.
+                Defaults to True.
+
+        Returns:
+            None
+
+        Example:
+            ```python
+            # Add a STAC item's visual asset
+            m.add_stac_layer(
+                "https://planetarycomputer.microsoft.com/api/stac/v1/collections/"
+                "sentinel-2-l2a/items/S2A_MSIL2A_20230101T100401_R022_T33UUP_20230101T121000"
+            )
+
+            # Add a specific band with custom options
+            m.add_stac_layer(
+                url="https://example.com/stac/item.json",
+                asset_key="B04",
+                layer_options={"paint": {"raster-opacity": 0.7}},
+            )
+            ```
+
+        Note:
+            The STAC item must contain the specified asset key, and the asset
+            must have an 'href' pointing to a Cloud Optimized GeoTIFF (COG).
+        """
+        if source_options is None:
+            source_options = {}
+        if layer_options is None:
+            layer_options = {}
+
+        if source_id is None:
+            source_id = f"stac-source-{uuid.uuid4().hex[:8]}"
+        if layer_id is None:
+            layer_id = f"stac-layer-{uuid.uuid4().hex[:8]}"
+
+        self.add_call(
+            "addStacLayer",
+            [url, asset_key, source_id, layer_id, source_options, layer_options, fit_bounds],
         )
