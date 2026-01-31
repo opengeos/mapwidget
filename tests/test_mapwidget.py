@@ -2,7 +2,6 @@
 
 """Tests for `mapwidget` package."""
 
-
 import json
 import os
 import tempfile
