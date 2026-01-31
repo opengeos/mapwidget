@@ -2,7 +2,6 @@
 
 """Tests for `mapwidget` package."""
 
-
 import unittest
 
 from mapwidget import leaflet
