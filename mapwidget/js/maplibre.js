@@ -441,6 +441,14 @@ function render({ model, el }) {
                     // Handle addCogLayer specially
                     const [url, sourceId, layerId, sourceOptions, layerOptions] = args;
                     addCogLayer(map, url, sourceId, layerId, sourceOptions, layerOptions);
+                } else if (method === "addGeoJSON") {
+                    // Handle addGeoJSON specially
+                    const [data, sourceId, layerId, layerType, paint, layout, sourceOptions, geomTypes, bounds, beforeId] = args;
+                    addGeoJSONToMap(map, data, sourceId, layerId, layerType, paint, layout, sourceOptions, geomTypes, bounds, beforeId);
+                } else if (method === "addStacLayer") {
+                    // Handle addStacLayer specially
+                    const [url, assetKey, sourceId, layerId, sourceOptions, layerOptions, fitBounds] = args;
+                    addStacLayer(map, url, assetKey, sourceId, layerId, sourceOptions, layerOptions, fitBounds);
                 } else if (typeof map[method] === "function") {
                     try {
                         map[method](...(args || []));
@@ -1139,6 +1147,213 @@ function render({ model, el }) {
                     console.error("MapLibre COG Protocol not available");
                 }
             });
+        }
+
+        // Function to add GeoJSON data to the map
+        function addGeoJSONToMap(map, data, sourceId, layerId, layerType, paint, layout, sourceOptions, geomTypes, bounds, beforeId) {
+            // Helper: determine default paint for a layer type
+            function defaultPaint(type) {
+                switch (type) {
+                    case 'fill':
+                        return { 'fill-color': '#088', 'fill-opacity': 0.6 };
+                    case 'line':
+                        return { 'line-color': '#088', 'line-width': 2 };
+                    case 'circle':
+                        return { 'circle-radius': 5, 'circle-color': '#088', 'circle-opacity': 0.8 };
+                    case 'fill-extrusion':
+                        return { 'fill-extrusion-color': '#088', 'fill-extrusion-height': 10, 'fill-extrusion-opacity': 0.6 };
+                    case 'heatmap':
+                        return {};
+                    case 'symbol':
+                        return {};
+                    default:
+                        return {};
+                }
+            }
+
+            // Helper: map geometry type to layer type
+            function geomToLayerType(geomType) {
+                switch (geomType) {
+                    case 'Point':
+                    case 'MultiPoint':
+                        return 'circle';
+                    case 'LineString':
+                    case 'MultiLineString':
+                        return 'line';
+                    case 'Polygon':
+                    case 'MultiPolygon':
+                        return 'fill';
+                    default:
+                        return 'circle';
+                }
+            }
+
+            function doAdd(geojsonData) {
+                try {
+                    // Add source
+                    const source = {
+                        type: 'geojson',
+                        data: geojsonData,
+                        ...sourceOptions,
+                    };
+                    map.addSource(sourceId, source);
+                    console.log(`Added GeoJSON source: ${sourceId}`);
+
+                    // Determine what layers to add
+                    if (layerType) {
+                        // Explicit layer type — single layer
+                        const p = Object.keys(paint).length > 0 ? paint : defaultPaint(layerType);
+                        const layer = {
+                            id: layerId,
+                            type: layerType,
+                            source: sourceId,
+                            paint: p,
+                        };
+                        if (Object.keys(layout).length > 0) {
+                            layer.layout = layout;
+                        }
+                        if (beforeId) {
+                            map.addLayer(layer, beforeId);
+                        } else {
+                            map.addLayer(layer);
+                        }
+                        console.log(`Added GeoJSON layer: ${layerId} (type: ${layerType})`);
+                    } else if (geomTypes && geomTypes.length > 0) {
+                        // Auto-detect: create layers per geometry family
+                        const families = new Set();
+                        geomTypes.forEach(gt => families.add(geomToLayerType(gt)));
+
+                        families.forEach(type => {
+                            const lid = families.size === 1 ? layerId : `${layerId}-${type}`;
+                            const p = Object.keys(paint).length > 0 ? paint : defaultPaint(type);
+                            const filter = type === 'fill'
+                                ? ['any', ['==', '$type', 'Polygon']]
+                                : type === 'line'
+                                    ? ['any', ['==', '$type', 'LineString']]
+                                    : ['any', ['==', '$type', 'Point']];
+
+                            const layer = {
+                                id: lid,
+                                type: type,
+                                source: sourceId,
+                                paint: p,
+                            };
+                            if (families.size > 1) {
+                                layer.filter = filter;
+                            }
+                            if (Object.keys(layout).length > 0) {
+                                layer.layout = layout;
+                            }
+                            if (beforeId) {
+                                map.addLayer(layer, beforeId);
+                            } else {
+                                map.addLayer(layer);
+                            }
+                            console.log(`Added GeoJSON layer: ${lid} (type: ${type})`);
+                        });
+                    } else {
+                        // Fallback: single circle layer
+                        const type = 'circle';
+                        const p = Object.keys(paint).length > 0 ? paint : defaultPaint(type);
+                        const layer = {
+                            id: layerId,
+                            type: type,
+                            source: sourceId,
+                            paint: p,
+                        };
+                        if (Object.keys(layout).length > 0) {
+                            layer.layout = layout;
+                        }
+                        if (beforeId) {
+                            map.addLayer(layer, beforeId);
+                        } else {
+                            map.addLayer(layer);
+                        }
+                        console.log(`Added GeoJSON layer: ${layerId} (type: ${type})`);
+                    }
+
+                    // Fit bounds if provided
+                    if (bounds && bounds.length === 4) {
+                        map.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], { padding: 50, maxZoom: 15 });
+                    }
+                } catch (err) {
+                    console.error("Failed to add GeoJSON to map:", err);
+                }
+            }
+
+            // If data is a URL string, fetch it first
+            if (typeof data === 'string' && (data.startsWith('http://') || data.startsWith('https://'))) {
+                fetch(data)
+                    .then(response => response.json())
+                    .then(geojsonData => {
+                        // Compute bounds from fetched data if not provided
+                        if (!bounds) {
+                            const computedBounds = computeGeoJSONBounds(geojsonData);
+                            doAdd(geojsonData);
+                            if (computedBounds) {
+                                map.fitBounds([[computedBounds[0], computedBounds[1]], [computedBounds[2], computedBounds[3]]], { padding: 50, maxZoom: 15 });
+                            }
+                        } else {
+                            doAdd(geojsonData);
+                        }
+                    })
+                    .catch(err => {
+                        console.error(`Failed to fetch GeoJSON from URL: ${data}`, err);
+                    });
+            } else {
+                doAdd(data);
+            }
+        }
+
+        // Helper to compute bounds from GeoJSON data on the JS side
+        function computeGeoJSONBounds(geojson) {
+            const coords = [];
+            function extractCoords(obj) {
+                if (!obj) return;
+                if (obj.coordinates) flattenCoords(obj.coordinates);
+                if (obj.geometry) extractCoords(obj.geometry);
+                if (obj.features) obj.features.forEach(f => extractCoords(f));
+                if (obj.geometries) obj.geometries.forEach(g => extractCoords(g));
+            }
+            function flattenCoords(c) {
+                if (!c || c.length === 0) return;
+                if (typeof c[0] === 'number') { coords.push(c.slice(0, 2)); return; }
+                c.forEach(item => flattenCoords(item));
+            }
+            extractCoords(geojson);
+            if (coords.length === 0) return null;
+            const lngs = coords.map(c => c[0]);
+            const lats = coords.map(c => c[1]);
+            return [Math.min(...lngs), Math.min(...lats), Math.max(...lngs), Math.max(...lats)];
+        }
+
+        // Function to add a STAC item's asset as a raster layer
+        function addStacLayer(map, url, assetKey, sourceId, layerId, sourceOptions, layerOptions, fitBounds) {
+            fetch(url)
+                .then(response => response.json())
+                .then(stacItem => {
+                    // Extract asset href
+                    const assets = stacItem.assets || {};
+                    const asset = assets[assetKey];
+                    if (!asset || !asset.href) {
+                        console.error(`STAC item does not contain asset '${assetKey}' or asset has no href`);
+                        return;
+                    }
+                    const cogUrl = asset.href;
+                    console.log(`Loading STAC asset '${assetKey}' from: ${cogUrl}`);
+
+                    // Add as a COG layer
+                    addCogLayer(map, cogUrl, sourceId, layerId, sourceOptions, layerOptions);
+
+                    // Fit to STAC item's bbox if available
+                    if (fitBounds && stacItem.bbox && stacItem.bbox.length >= 4) {
+                        const [west, south, east, north] = stacItem.bbox;
+                        map.fitBounds([[west, south], [east, north]], { padding: 50 });
+                    }
+                })
+                .catch(err => {
+                    console.error(`Failed to fetch STAC item from: ${url}`, err);
+                });
         }
 
         // Resize after layout stabilizes
