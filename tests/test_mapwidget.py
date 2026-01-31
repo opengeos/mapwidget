@@ -129,7 +129,9 @@ class TestAddGeoJSON(unittest.TestCase):
             "type": "Feature",
             "geometry": {
                 "type": "Polygon",
-                "coordinates": [[[-77, 38], [-76, 38], [-76, 39], [-77, 39], [-77, 38]]],
+                "coordinates": [
+                    [[-77, 38], [-76, 38], [-76, 39], [-77, 39], [-77, 38]]
+                ],
             },
             "properties": {},
         }
@@ -143,9 +145,7 @@ class TestAddGeoJSON(unittest.TestCase):
             "type": "FeatureCollection",
             "features": [],
         }
-        source_id = m.add_geojson(
-            geojson, source_id="my-source", layer_id="my-layer"
-        )
+        source_id = m.add_geojson(geojson, source_id="my-source", layer_id="my-layer")
         assert source_id == "my-source"
         call = [c for c in m.calls if c["method"] == "addGeoJSON"]
         assert call[0]["args"][1] == "my-source"

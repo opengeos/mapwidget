@@ -849,5 +849,13 @@ class Map(anywidget.AnyWidget):
 
         self.add_call(
             "addStacLayer",
-            [url, asset_key, source_id, layer_id, source_options, layer_options, fit_bounds],
+            [
+                url,
+                asset_key,
+                source_id,
+                layer_id,
+                source_options,
+                layer_options,
+                fit_bounds,
+            ],
         )
